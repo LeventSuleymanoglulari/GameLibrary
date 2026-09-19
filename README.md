@@ -1,28 +1,34 @@
 # Oyun Kütüphanesi
 
 Oyunları, oynama durumlarını ve kişisel puanları tek yerde takip etmek için
-planlanan bir masaüstü uygulaması.
+planlanan bir PC masaüstü uygulaması.
 
-## İlk sürümün kapsamı
+## Proje belgeleri
 
-- **Tüm Oyunlar:** Eklenen bütün oyunları gösterir.
-- **Wishlist (İstek Listesi):** İlgilenilen oyunları listeler.
-- **Oynanacak:** Daha sonra oynanması planlanan oyunları listeler.
-- **Kütüphane:** Kullanıcının sahip olduğu oyunları listeler.
-- **Oynandı:** Oynanmış oyunları listeler.
-- **Bitti:** Tamamlanan oyunları listeler.
-- **Puanlama:** Kullanıcı oyunlara kişisel puan verebilir ve puanını değiştirebilir.
+- [Proje planı](docs/proje-plani.md) kapsamı, kullanım kurallarını, geliştirme
+  adımlarını ve kabul ölçütlerini içerir.
+- [Görsel anlatım](docs/oyun-kutuphanesi-gorsel.html) dört sekmeyi ve oyun
+  kartlarını teknik olmayan kullanıcılar için açıklar. HTML dosyasını indirip
+  tarayıcıda açın. GitHub dosya sayfası HTML'yi uygulama gibi çalıştırmaz.
 
-Bu listeler uygulamada sekmeler olarak yer alır. Varsayılan sekme **Tüm Oyunlar** olur.
+![Dört sekme ve oyunların altındaki durum kutuları](docs/assets/oyun-kutuphanesi-onizleme.png)
+
+## Dört sekme
+
+| Sekme | Gösterdiği oyunlar |
+| --- | --- |
+| Tüm Oyunlar | Uygulamaya eklenen bütün oyunlar |
+| Kütüphanem | Kütüphane olarak işaretlenen, sahip olunan oyunlar |
+| Wishlist | İstek listesine eklenen oyunlar |
+| Oynanacak | Daha sonra oynanması planlanan oyunlar |
+
 Bir oyun, ilgili olduğu birden fazla sekmede görünebilir.
+**Oynandı**, **Bitti** ve **Puan** oyun kartındaki bilgilerdir; ayrı sekmeler değildir.
 
 ## Oyun kartları
 
-Her oyun kartında oyunun adı yer alır. Oyunun altında yalnızca o oyuna uygulanmış
-durumlar ayrı kutular halinde gösterilir. Puan verilmişse puan da burada görünür;
-uygulanmamış durumlar ve verilmemiş puan için boş kutu gösterilmez.
-
-Örnek:
+Oyunun altında yalnızca uygulanmış durumlar ayrı kutular halinde gösterilir.
+Puan verilmişse puan da görünür. Uygulanmamış durumlar için boş kutu gösterilmez.
 
 ```text
 Hollow Knight
@@ -32,15 +38,13 @@ Hades II
 [Wishlist] [Oynanacak]
 ```
 
-Örnekteki 10 üzerinden puanlama temsili olup nihai puan ölçeği henüz belirlenmemiştir.
+Örnekteki 10 üzerinden puanlama temsilidir. Kesin puan ölçeği henüz seçilmemiştir.
 
 ## Projenin durumu
 
-Bu depo şu anda yalnızca proje hazırlığını içerir. Henüz uygulama kodu,
-bağımlılık dosyaları veya çalıştırma, test ve paketleme komutları bulunmaz.
-Önceki Create React App açıklamaları mevcut bir uygulamayı temsil etmiyordu.
+Depo proje planını içerir. Henüz uygulama kodu, bağımlılık dosyaları veya
+çalıştırma, test ve paketleme komutları bulunmaz. Görsel anlatım bir taslaktır.
 
-Hedef bir masaüstü uygulamasıdır. Desteklenecek işletim sistemleri, masaüstü
-teknolojisi, verilerin saklanma yöntemi ve puan ölçeği uygulama geliştirilmeden
-önce belirlenecektir. Teknoloji seçildikten sonra kurulum, geliştirme, test ve
-masaüstü paketleme adımları bu belgeye eklenecektir.
+İşletim sistemi, masaüstü teknolojisi, veri saklama yöntemi ve puan ölçeği
+[planın açık kararları](docs/proje-plani.md#uygulama-geliştirilmeden-önce-verilecek-kararlar)
+arasındadır. Bunlar seçildiğinde kurulum ve geliştirme adımları eklenecektir.
