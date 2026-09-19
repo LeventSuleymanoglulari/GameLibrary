@@ -1,27 +1,36 @@
-cat > .gitignore << 'EOF'
+# Operating system files
 .DS_Store
-Xcode user data
+Thumbs.db
+Desktop.ini
+
+# Local environment settings
+.env
+.env.*
+!.env.example
+
+# Build outputs
+/build/
+/dist/
+
+# Xcode user data and generated files
 *.xcuserdatad
 *.xcscmblueprint
 *.xccheckout
 xcuserdata/
-Derived data
 DerivedData/
-Build products
-build/
-Swift Package Manager
+
+# Swift Package Manager
 .swiftpm/
 .build/
-CocoaPods (if you add later, consider committing Pods or not per your policy)
+
+# Dependency and packaging outputs
 Pods/
-Carthage
 Carthage/Build/
-Fastlane
 fastlane/report.xml
 fastlane/Preview.html
-fastlane/screenshots
-fastlane/test_output
-Playgrounds
+fastlane/screenshots/
+fastlane/test_output/
+
+# Playground generated files
 timeline.xctimeline
 playground.xcworkspace
-EOF
