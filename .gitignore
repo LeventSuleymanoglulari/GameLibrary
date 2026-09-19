@@ -1,0 +1,27 @@
+cat > .gitignore << 'EOF'
+.DS_Store
+Xcode user data
+*.xcuserdatad
+*.xcscmblueprint
+*.xccheckout
+xcuserdata/
+Derived data
+DerivedData/
+Build products
+build/
+Swift Package Manager
+.swiftpm/
+.build/
+CocoaPods (if you add later, consider committing Pods or not per your policy)
+Pods/
+Carthage
+Carthage/Build/
+Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+Playgrounds
+timeline.xctimeline
+playground.xcworkspace
+EOF
