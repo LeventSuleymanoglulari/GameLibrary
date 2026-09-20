@@ -1,7 +1,23 @@
 # Oyun Kütüphanesi
 
 Oyunları, oynama durumlarını ve kişisel puanları tek yerde takip etmek için
-planlanan bir PC masaüstü uygulaması.
+geliştirilen yerel bir macOS masaüstü uygulaması.
+
+İlk sürüm macOS 26 ve sonrası için SwiftUI ve SwiftData ile geliştirilecektir.
+Ürün ve davranış seçimleri [ilk sürüm kararlarında](docs/ilk-surum-kararlari.md)
+ayrıntılı olarak kayıtlıdır.
+
+## Geliştirme ortamı
+
+Xcode 27 veya sonrası ve macOS 26 SDK'sı gerekir. Projeyi Xcode ile açmak için
+`Game library/Game library.xcodeproj` dosyasını açın; **Game library** şemasını
+ve **My Mac** hedefini seçip çalıştırın.
+
+Komut satırından derleme:
+
+```sh
+xcodebuild -project "Game library/Game library.xcodeproj" -scheme "Game library" -destination 'platform=macOS' build
+```
 
 ## Proje belgeleri
 
@@ -44,9 +60,6 @@ Hades II
 
 ## Projenin durumu
 
-Depo proje planını içerir. Henüz uygulama kodu, bağımlılık dosyaları veya
-çalıştırma, test ve paketleme komutları bulunmaz. Görsel anlatım bir taslaktır.
-
-İşletim sistemi, masaüstü teknolojisi, veri saklama yöntemi ve puan ölçeği
-[planın açık kararları](docs/proje-plani.md#uygulama-geliştirilmeden-önce-verilecek-kararlar)
-arasındadır. Bunlar seçildiğinde kurulum ve geliştirme adımları eklenecektir.
+Native macOS proje iskeleti kurulmuştur ve 1. aşamadaki kararlar tamamlanmıştır.
+Oyun listesi, dört sekme, durum/puan düzenleme ve kalıcılığın kabul kontrolleri
+sonraki aşamalardadır. Görsel anlatım bir taslaktır; çalışan uygulama değildir.
