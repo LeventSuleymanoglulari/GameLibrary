@@ -1,8 +1,8 @@
 # Oyun kütüphanesi proje planı
 
-Bu belge, kişisel oyun koleksiyonunu takip etmek için planlanan PC masaüstü
-uygulamasının kapsamını tanımlar. Uygulama henüz geliştirilmemiştir.
-Kullanıcının belirttiği gereksinimler ile aşağıdaki öneriler ayrı tutulmuştur.
+Bu belge, kişisel oyun koleksiyonunu takip etmek için planlanan macOS masaüstü
+uygulamasının kapsamını tanımlar. İlk sürüm kararları
+[ayrı belgede](ilk-surum-kararlari.md) kayıtlıdır.
 
 [Görsel anlatım](oyun-kutuphanesi-gorsel.html) aynı planı sekmeler ve örnek oyun
 kartlarıyla açıklar. HTML dosyasını indirip tarayıcıda açabilirsiniz.
@@ -58,21 +58,21 @@ Hollow Knight
 Hades II örneği Tüm Oyunlar, Wishlist ve Oynanacak sekmelerinde görünür.
 Hollow Knight örneği Tüm Oyunlar ve Kütüphanem sekmelerinde görünür.
 
-## İlk sürüm için önerilen çalışma kuralları
+## İlk sürüm çalışma kuralları
 
-Bu bölümdeki kararlar planlama önerisidir. Kullanıcı tarafından kesinleştirilmiş
-istekler değildir. Geliştirmeye başlamadan önce açık kararlarla birlikte netleştirilir.
+Bu bölümdeki kurallar ilk sürüm için kesinleştirilmiştir.
 
 - Açılışta Tüm Oyunlar sekmesi seçilir.
-- Oyunlar ilk sürümde adları yazılarak elle eklenir. Boş oyun adı kabul edilmez.
+- Oyunlar ilk sürümde adları yazılarak elle eklenir. Boş veya yalnızca boşluk
+  içeren oyun adı kabul edilmez.
 - Kullanıcı bir oyunun durumlarını ekler veya kaldırır. Kart ve sekmeler aynı
   kayıt üzerinden güncellenir. Sekmeden çıkmak oyun kaydını silmez.
 - Durumlar bağımsız seçilir. Bitti seçimi otomatik olarak Oynandı eklemez veya
   Oynanacak kaldırmaz. Kütüphane seçimi de Wishlist durumunu otomatik kaldırmaz.
   Böylece tekrar oynanacak bir oyunda Bitti ve Oynanacak birlikte bulunabilir.
-- Puan isteğe bağlıdır. Başlangıç önerisi 1 ile 10 arasında tam sayıdır.
+- Puan isteğe bağlıdır ve 1 ile 10 arasında tam sayıdır.
   Kullanıcı puanı değiştirebilir veya kaldırabilir. Puan için bitirme şartı önerilmez.
-- Kayıtlar uygulama kapatılıp açıldığında korunur. Saklama yöntemi henüz seçilmemiştir.
+- Kayıtlar uygulama kapatılıp açıldığında SwiftData'nın yerel deposunda korunur.
   Kayıt başarısız olursa uygulama başarı göstermez ve kullanıcıya hata bildirir.
 - Boş sekmede açıklayıcı bir mesaj görünür. Örneğin Wishlist boşsa
   "İstek listende henüz oyun yok" yazısı gösterilir.
@@ -95,16 +95,16 @@ Kullanıcı bir oyunu doğrudan Kütüphane veya Oynandı olarak işaretleyebili
 Bu örneğin adımları zorunlu bir sıra değildir. Bağımsız durum davranışı
 ve puanlama, önceki bölümdeki önerilere dayanır.
 
-## Uygulama geliştirilmeden önce verilecek kararlar
+## İlk sürüm kararları
 
-| Karar | Şu anki durum | Kararın etkisi |
+| Karar | Seçim | Etkisi |
 | --- | --- | --- |
-| İşletim sistemi | PC hedefi belli. Windows sürümleri, macOS ve Linux desteği açık. | Kurulum ve paketleme kapsamı |
-| Masaüstü teknolojisi | Seçilmedi. | Geliştirme ve dağıtım araçları |
-| Oyun ekleme | Elle ekleme önerildi. Katalog kaynağı istenmedi. | İnternet ve dış servis gereksinimi |
-| Veri saklama | Kalıcılık önerildi. Yerel dosya, veritabanı veya bulut seçilmedi. | Çevrimdışı kullanım, yedekleme ve hesap ihtiyacı |
-| Puan ölçeği | 1 ile 10 arasında tam sayı önerildi. | Puan girişi, doğrulama ve gösterim |
-| Durum ilişkileri | Bağımsız seçim önerildi. | Bitti, Oynandı, Wishlist ve Kütüphane arasındaki otomatik değişiklikler |
+| İşletim sistemi | macOS 26 ve sonrası | Kurulum ve paketleme macOS ile sınırlıdır. |
+| Masaüstü teknolojisi | Swift 6, SwiftUI, SwiftData ve Xcode 27 | Yerel macOS geliştirme ve dağıtım araçları |
+| Oyun ekleme | Elle ad girişi | İnternet ve dış servis gerekmez. |
+| Veri saklama | Yerel, kalıcı SwiftData deposu | Çevrimdışı kullanım; bulut eşitlemesi yoktur. |
+| Puan ölçeği | 1–10 tam sayı, isteğe bağlı | Puan girişi doğrulanır. |
+| Durum ilişkileri | Bağımsız seçim | Otomatik durum değişikliği yoktur. |
 
 İlk plan Steam veya Epic bağlantısı, mağaza kataloğu, arkadaş sistemi, herkese
 açık profil, oyun başlatma ya da cihazlar arası eşitleme taahhüt etmez.
@@ -120,12 +120,12 @@ Bunlar ayrıca istenirse kapsam ve veri kullanımı değerlendirilir.
 | 4. Kalıcılığı ve hataları doğrula | Kapatıp açınca korunan kayıtlar, boş durum ve hata mesajları | Veri kaybı ve başarısız kayıt senaryoları kontrol edilir. |
 | 5. Masaüstü sürümünü hazırla | Seçilen sistemde kurulabilir uygulama | Kurulum ve aşağıdaki kabul senaryoları gerçek uygulamada geçer. |
 
-Takvim ve efor, ilk adımdaki kararlar verilmeden tahmin edilmemiştir.
+Takvim ve efor, ilk adımdaki kararlar temel alınarak sonraki aşamalarda tahmin edilir.
 
 ## Kabul senaryoları
 
 Bu senaryolar gelecekteki uygulama içindir. Bu dokümantasyon değişikliğiyle
-geçtikleri iddia edilmez. Öneriye bağlı senaryolar, ilgili karar kabul edilirse uygulanır.
+geçtikleri iddia edilmez. Aşağıdaki kurallar ilk sürüm için kesinleştirilmiştir.
 
 | No | İşlem | Beklenen sonuç | Dayanak |
 | --- | --- | --- | --- |
@@ -134,13 +134,13 @@ geçtikleri iddia edilmez. Öneriye bağlı senaryolar, ilgili karar kabul edili
 | K3 | Oyuna Wishlist ve Oynanacak ekle. | İki kutu görünür. Aynı oyun Tüm Oyunlar, Wishlist ve Oynanacak'ta listelenir. | İstenen kapsam |
 | K4 | Oyuna Kütüphane ekle. | Kütüphanem'de görünür. Kart kutusunun adı Kütüphane olur. | İstenen kapsam |
 | K5 | Oyuna Oynandı ve Bitti ekle. | Kartta iki kutu görünür. Yeni sekme oluşmaz. | İstenen kapsam |
-| K6 | Puan ver, değiştir ve kaldır. | Kart güncel puanı gösterir. Puan kaldırılınca kutusu kaybolur. | Kapsam ve düzenleme önerisi |
-| K7 | Wishlist durumunu kaldır. | Oyun Wishlist'ten çıkar. Tüm Oyunlar'da kalır ve diğer durumları korunur. | Düzenleme önerisi |
-| K8 | Bitti ve Oynanacak durumlarını birlikte seç. | İkisi de korunur. Oynandı otomatik eklenmez. | Bağımsız durum önerisi |
-| K9 | Boş ad veya ölçek dışı puan kaydetmeyi dene. | Geçersiz bilgi kaydedilmez. Kullanıcı neyi düzeltmesi gerektiğini görür. | Giriş doğrulama önerisi |
-| K10 | Uygulamayı kapatıp yeniden aç. | Oyunlar, durumlar ve puanlar korunur. | Kalıcılık önerisi |
-| K11 | Kaydetme başarısızlığını ve boş sekmeyi görüntüle. | Hata başarı gibi gösterilmez. Boş liste açıklanır. | Hata ve boş durum önerisi |
-| K12 | Sekmeleri ve düzenleme kontrollerini klavyeyle kullan. | Odak görünür. İşlemler fare olmadan tamamlanır. | Erişilebilirlik önerisi |
+| K6 | Puan ver, değiştir ve kaldır. | Kart güncel puanı gösterir. Puan kaldırılınca kutusu kaybolur. | İlk sürüm kararı |
+| K7 | Wishlist durumunu kaldır. | Oyun Wishlist'ten çıkar. Tüm Oyunlar'da kalır ve diğer durumları korunur. | İlk sürüm kararı |
+| K8 | Bitti ve Oynanacak durumlarını birlikte seç. | İkisi de korunur. Oynandı otomatik eklenmez. | İlk sürüm kararı |
+| K9 | Boş ad veya ölçek dışı puan kaydetmeyi dene. | Geçersiz bilgi kaydedilmez. Kullanıcı neyi düzeltmesi gerektiğini görür. | İlk sürüm kararı |
+| K10 | Uygulamayı kapatıp yeniden aç. | Oyunlar, durumlar ve puanlar korunur. | İlk sürüm kararı |
+| K11 | Kaydetme başarısızlığını ve boş sekmeyi görüntüle. | Hata başarı gibi gösterilmez. Boş liste açıklanır. | İlk sürüm kararı |
+| K12 | Sekmeleri ve düzenleme kontrollerini klavyeyle kullan. | Odak görünür. İşlemler fare olmadan tamamlanır. | İlk sürüm kararı |
 
 ## Görselin sınırları
 

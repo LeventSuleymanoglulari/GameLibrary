@@ -20,17 +20,16 @@ Bu maddeler belge hazırlığını gösterir; uygulama kabul senaryoları henüz
 
 ## 1. İlk sürüm kararlarını netleştir
 
-- [ ] Hedef işletim sistemini ve desteklenecek sürümlerini belirle.
-- [ ] Masaüstü teknolojisini ve geliştirme araçlarını seç.
-- [ ] Elle oyun ekleme önerisini karara bağla.
-- [ ] Veri saklama yöntemini ve yeniden açılışta kayıtların korunması kuralını belirle.
-- [ ] Puan ölçeğini belirle; mevcut öneri isteğe bağlı, 1–10 arasında tam sayıdır.
-- [ ] Durumların bağımsız seçilmesi ve otomatik durum değişikliği yapılmaması
-  önerisini karara bağla.
-- [ ] Sonuçları proje planına işle; öneriye bağlı kabul senaryolarını güncelle.
+- [x] Hedef işletim sistemi ve desteklenen sürümleri belirle: macOS 26 ve sonrası.
+- [x] Masaüstü teknolojisini ve geliştirme araçlarını seç: SwiftUI, SwiftData ve Xcode 27.
+- [x] Elle oyun eklemeyi karara bağla.
+- [x] Yerel SwiftData kalıcılığını ve yeniden açılışta kayıtların korunmasını belirle.
+- [x] İsteğe bağlı 1–10 tam sayı puan ölçeğini belirle.
+- [x] Durumların bağımsız seçilmesini ve otomatik durum değişikliği yapılmamasını karara bağla.
+- [x] Sonuçları [ilk sürüm kararlarına](docs/ilk-surum-kararlari.md) ve proje planına işle; kabul senaryolarını güncelle.
 
-**Tamamlanma ölçütü:** Teknoloji, platform ve davranış kararları kayıtlıdır;
-ilk sürümün kapsamı ve geçmesi gereken kabul senaryoları bellidir.
+**Tamamlanma ölçütü:** Tamamlandı. Teknoloji, platform ve davranış kararları
+kayıtlıdır; ilk sürümün kapsamı ve geçmesi gereken kabul senaryoları bellidir.
 
 ## 2. Oyun listesini ve dört sekmeyi hazırla
 
