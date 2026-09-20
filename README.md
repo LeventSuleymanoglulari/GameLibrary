@@ -5,6 +5,8 @@ planlanan bir PC masaüstü uygulaması.
 
 ## Proje belgeleri
 
+- [Yol haritası](ROADMAP.md) ilk sürüme kadar izlenecek aşamaları ve
+  tamamlanma ölçütlerini içerir.
 - [Proje planı](docs/proje-plani.md) kapsamı, kullanım kurallarını, geliştirme
   adımlarını ve kabul ölçütlerini içerir.
 - [Görsel anlatım](docs/oyun-kutuphanesi-gorsel.html) dört sekmeyi ve oyun
