@@ -12,6 +12,15 @@ import Synchronization
         XCTAssertNil(game.released)
     }
 
+    func testHostAndCredentialsUseOnlyMemoryStorage() throws {
+        guard Game_libraryApp.usesTestStorage else { return XCTFail("Hosted tests must use isolated storage") }
+        let app = Game_libraryApp()
+        XCTAssertTrue(app.sharedModelContainer.configurations.allSatisfy(\.isStoredInMemoryOnly))
+        XCTAssertNil(try KeychainStore.loadRAWGKey())
+        try KeychainStore.saveRAWGKey("memory-only-test-key")
+        XCTAssertEqual(try KeychainStore.loadRAWGKey(), "memory-only-test-key")
+    }
+
     private func catalog(_ id: Int = 42, name: String = "Portal") throws -> RAWGGame {
         try JSONDecoder().decode(RAWGGame.self, from: JSONSerialization.data(withJSONObject: ["id": id, "name": name]))
     }

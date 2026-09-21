@@ -5,7 +5,14 @@ enum KeychainStore {
     private static let service = "com.leventsuleymanoglulari.game-library"
     private static let account = "rawg-api-key"
 
+    #if DEBUG
+    private static var testKey: String?
+    #endif
+
     static func loadRAWGKey() throws -> String? {
+        #if DEBUG
+        if Game_libraryApp.usesTestStorage { return testKey }
+        #endif
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -25,6 +32,9 @@ enum KeychainStore {
     }
 
     static func saveRAWGKey(_ key: String) throws {
+        #if DEBUG
+        if Game_libraryApp.usesTestStorage { testKey = key; return }
+        #endif
         let data = Data(key.utf8)
         let attributes: [String: Any] = [kSecValueData as String: data]
         let query: [String: Any] = [

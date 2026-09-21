@@ -10,16 +10,20 @@ import SwiftData
 
 @main
 struct Game_libraryApp: App {
+    static var usesTestStorage: Bool {
+        #if DEBUG
+        ProcessInfo.processInfo.arguments.contains("--ui-testing")
+            || ProcessInfo.processInfo.environment["XCTestConfigurationFilePath"] != nil
+        #else
+        false
+        #endif
+    }
+
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Game.self,
         ])
-        #if DEBUG
-        let inMemory = ProcessInfo.processInfo.arguments.contains("--ui-testing")
-        #else
-        let inMemory = false
-        #endif
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: Game_libraryApp.usesTestStorage)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
