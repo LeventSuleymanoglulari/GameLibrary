@@ -14,7 +14,12 @@ struct Game_libraryApp: App {
         let schema = Schema([
             Game.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        #if DEBUG
+        let inMemory = ProcessInfo.processInfo.arguments.contains("--ui-testing")
+        #else
+        let inMemory = false
+        #endif
+        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: inMemory)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])

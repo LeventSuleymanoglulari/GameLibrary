@@ -1,8 +1,3 @@
-//
-//  KeychainStore.swift
-//  Game library
-//
-
 import Foundation
 import Security
 

@@ -42,7 +42,8 @@ struct ContentView: View {
     @Query(sort: \Game.addedDate, order: .reverse) private var games: [Game]
     @State private var selectedTab: LibraryTab = .allGames
     @State private var isShowingAddGame = false
-    @State private var alertMessage: String?
+    @State private var selectedGame: Game?
+    @State private var pendingGame: Game?
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -61,25 +62,23 @@ struct ContentView: View {
                 .accessibilityHint("RAWG kataloğunda arama veya elle oyun ekleme akışını açar.")
             }
         }
-        .sheet(isPresented: $isShowingAddGame) {
-            AddGameSheet(existingRAWGIDs: Set(games.compactMap { game in
-                game.source == "rawg" ? game.externalID : nil
-            })) { game in save(game) }
+        .sheet(isPresented: $isShowingAddGame, onDismiss: {
+            selectedGame = pendingGame
+            pendingGame = nil
+        }) {
+            AddGameSheet { game in
+                selectedTab = .allGames
+                pendingGame = game
+            }
         }
-        .alert("Oyun eklenemedi", isPresented: Binding(
-            get: { alertMessage != nil }, set: { if !$0 { alertMessage = nil } }
-        )) {
-            Button("Tamam", role: .cancel) { alertMessage = nil }
-        } message: { Text(alertMessage ?? "") }
-    }
-
-    private func save(_ game: Game) {
-        do {
-            modelContext.insert(game)
-            try modelContext.save()
-        } catch {
-            modelContext.rollback()
-            alertMessage = "Yerel kayıt tamamlanamadı. Lütfen tekrar deneyin."
+        .sheet(item: $selectedGame) { game in
+            VStack(alignment: .leading, spacing: 16) {
+                GameCard(game: game)
+                if let date = game.releaseDate { Text("Çıkış: \(date)") }
+                if !game.platforms.isEmpty { Text(game.platforms.joined(separator: ", ")) }
+                Button("Kapat") { selectedGame = nil }
+            }
+            .padding().frame(minWidth: 400)
         }
     }
 }
@@ -117,142 +116,162 @@ private struct GameCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(game.title).font(.headline)
-            if game.source == "rawg", let sourceURL = game.sourceURL, let url = URL(string: sourceURL) {
-                Link("RAWG'de görüntüle", destination: url).font(.subheadline)
+            if game.source == "rawg" {
+                Link("RAWG'de görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL)).font(.subheadline)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 }
 
 private struct AddGameSheet: View {
-    let existingRAWGIDs: Set<Int>
-    let onSave: (Game) -> Void
-
+    let onOpen: (Game) -> Void
+    @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @State private var search = CatalogSearchSession()
     @State private var searchText = ""
     @State private var manualTitle = ""
     @State private var apiKey = ""
-    @State private var results: [RAWGGame] = []
-    @State private var page = 1
-    @State private var hasNextPage = false
-    @State private var isSearching = false
+    @State private var selectedResult: RAWGGame?
+    @State private var manualEntryOnly = false
     @State private var isShowingKeyEditor = false
     @State private var errorMessage: String?
-    @State private var duplicateMessage: String?
-    private let service = RAWGService()
-
-    private var trimmedSearch: String { searchText.trimmingCharacters(in: .whitespacesAndNewlines) }
-    private var trimmedManualTitle: String { manualTitle.trimmingCharacters(in: .whitespacesAndNewlines) }
+    @State private var pendingDraft: GameDraft?
+    @State private var nameMatches: [Game] = []
+    @State private var requestTask: Task<Void, Never>?
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("RAWG kataloğunda ara") {
-                    TextField("Oyun adı", text: $searchText)
-                        .onSubmit { Task { await search(resetPage: true) } }
-                    HStack {
-                        Button("Ara") { Task { await search(resetPage: true) } }
-                            .disabled(trimmedSearch.isEmpty || isSearching)
-                        Button("API Anahtarını Ayarla") { isShowingKeyEditor = true }
-                    }
-                    if isSearching { ProgressView("RAWG aranıyor…") }
-                    if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
-                    ForEach(results) { result in RAWGResultRow(result: result) { importGame(result) } }
-                    if hasNextPage {
-                        Button("Sonraki 20 sonucu yükle") { Task { await search(resetPage: false) } }
-                            .disabled(isSearching)
+                if !manualEntryOnly {
+                    Section("RAWG kataloğunda ara") {
+                        TextField("Aranacak oyun adı", text: $searchText)
+                            .accessibilityIdentifier("searchTitle")
+                            .onSubmit { startSearch() }
+                        HStack {
+                            Button("Ara") { startSearch() }
+                                .disabled(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || search.isSearching)
+                            Button("API Anahtarını Ayarla") { isShowingKeyEditor = true }
+                            Link("RAWG kaynağı", destination: RAWGService.attributionURL)
+                        }
+                        if apiKey.isEmpty {
+                            Text("Katalog araması için RAWG API anahtarınızı ayarlayın. Elle ekleme her zaman kullanılabilir.")
+                        }
+                        if search.isSearching { ProgressView("RAWG aranıyor…") }
+                        if let message = search.errorMessage {
+                            Text(message).foregroundStyle(.red)
+                            Button("Tekrar dene") { requestTask = Task { await search.retry(apiKey: apiKey) } }
+                                .disabled(search.isSearching)
+                        }
+                        if search.hasSearched, search.results.isEmpty, !search.isSearching, search.errorMessage == nil {
+                            Text("Sonuç bulunamadı. Aradığınız adla elle ekleyebilirsiniz.")
+                        }
+                        if !search.results.isEmpty {
+                            ScrollView {
+                                LazyVStack(alignment: .leading, spacing: 12) {
+                                    ForEach(search.results) { result in
+                                        HStack(alignment: .top) {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text(result.name).font(.headline)
+                                                if let released = result.released { Text("Çıkış: \(released)").font(.caption) }
+                                                if !result.platformNames.isEmpty {
+                                                    Text(result.platformNames.joined(separator: ", ")).font(.caption)
+                                                }
+                                                Link("RAWG kaynağı", destination: result.sourceURL).font(.caption)
+                                            }
+                                            Spacer()
+                                            Button(selectedResult?.id == result.id ? "Seçildi" : "Seç") { selectedResult = result }
+                                        }
+                                    }
+                                }
+                            }
+                            .frame(height: 180)
+                        }
+                        if let selectedResult {
+                            Button("Seçilen Oyunu Ekle") {
+                                do { try add(GameDraft.rawg(selectedResult)) }
+                                catch { errorMessage = "Yerel kayıt tamamlanamadı. Seçiminiz korunuyor; tekrar deneyebilirsiniz." }
+                            }
+                        }
+                        if search.hasNextPage {
+                            Button("Sonraki 20 sonucu yükle") { requestTask = Task { await search.loadNext(apiKey: apiKey) } }
+                                .disabled(search.isSearching)
+                        }
                     }
                 }
-                Section {
-                    TextField("Oyun adı", text: $manualTitle)
+                Section("Elle ekle") {
+                    TextField("Oyun adı", text: $manualTitle).accessibilityIdentifier("manualTitle")
                     Button("Elle Ekle") {
-                        onSave(Game(title: trimmedManualTitle))
-                        dismiss()
+                        do { try add(GameDraft.manual(manualTitle)) }
+                        catch { errorMessage = "Yerel kayıt tamamlanamadı. Girdiğiniz ad korunuyor; tekrar deneyebilirsiniz." }
                     }
-                    .disabled(trimmedManualTitle.isEmpty)
-                } header: {
-                    Text("Elle ekle")
-                } footer: {
-                    Text("Elle ekleme çevrimdışı da çalışır. Arama sonuç vermezse aradığınız adı burada kullanabilirsiniz.")
+                    .disabled(manualTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    Text("Elle ekleme çevrimdışı da çalışır.").font(.footnote)
+                }
+                if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
+                if let pendingDraft {
+                    Section("Aynı adlı oyun zaten var") {
+                        Text("Mevcut kaydı açın veya bunun ayrı bir oyun olduğunu onaylayın.")
+                        ForEach(nameMatches) { game in
+                            Button("Mevcut kaydı aç: \(game.title)") { onOpen(game); dismiss() }
+                        }
+                        Button("Ayrı Oyun Olarak Ekle") {
+                            do { try add(pendingDraft, confirmed: true) }
+                            catch { errorMessage = "Yerel kayıt tamamlanamadı. Lütfen tekrar deneyin." }
+                        }
+                        Button("Vazgeç") { self.pendingDraft = nil; nameMatches = [] }
+                    }
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("Oyun Ekle")
-            .toolbar { ToolbarItem(placement: .cancellationAction) { Button("Kapat") { dismiss() } } }
-            .sheet(isPresented: $isShowingKeyEditor) {
-                APIKeySheet { key in apiKey = key }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Kapat") { dismiss() } }
+                ToolbarItem(placement: .primaryAction) {
+                    Button(manualEntryOnly ? "Katalogda ara" : "Elle ekle") { manualEntryOnly.toggle() }
+                }
             }
-            .alert("Bu oyun zaten eklendi", isPresented: Binding(
-                get: { duplicateMessage != nil }, set: { if !$0 { duplicateMessage = nil } }
-            )) {
-                Button("Tamam", role: .cancel) { duplicateMessage = nil }
-            } message: { Text(duplicateMessage ?? "") }
+            .sheet(isPresented: $isShowingKeyEditor) { APIKeySheet { apiKey = $0 } }
         }
         .frame(minWidth: 560, minHeight: 520)
-        .task { await loadKey() }
+        .task {
+            do { apiKey = try KeychainStore.loadRAWGKey() ?? "" }
+            catch { errorMessage = "Kaydedilmiş API anahtarı okunamadı. Elle ekleme kullanılabilir." }
+        }
+        .onDisappear { requestTask?.cancel() }
+        .onChange(of: manualTitle) { pendingDraft = nil; nameMatches = [] }
+        .onChange(of: selectedResult) { pendingDraft = nil; nameMatches = [] }
+        .onChange(of: searchText) { pendingDraft = nil; nameMatches = [] }
     }
 
-    @MainActor private func loadKey() async {
-        do { apiKey = try KeychainStore.loadRAWGKey() ?? "" }
-        catch { errorMessage = "Kaydedilmiş API anahtarı okunamadı. Elle ekleme kullanılabilir." }
+    private func startSearch() {
+        guard !search.isSearching else { return }
+        manualTitle = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
+        selectedResult = nil
+        let query = searchText
+        let key = apiKey
+        requestTask = Task { await search.search(query, apiKey: key) }
     }
 
-    private func search(resetPage: Bool) async {
-        let targetPage = resetPage ? 1 : page + 1
-        guard !trimmedSearch.isEmpty else { return }
-        manualTitle = trimmedSearch
-        isSearching = true
+    private func add(_ draft: GameDraft, confirmed: Bool = false) throws {
         errorMessage = nil
-        do {
-            let response = try await service.search(query: trimmedSearch, page: targetPage, apiKey: apiKey)
-            results = resetPage ? response.results : results + response.results
-            page = targetPage
-            hasNextPage = response.next != nil
-        } catch {
-            if resetPage { results = [] }
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? "Ağ bağlantısı kurulamadı. Elle ekleme kullanılabilir."
+        #if DEBUG
+        let failingSave: (() throws -> Void)? = ProcessInfo.processInfo.arguments.contains("--ui-testing-save-failure")
+            ? { throw CocoaError(.fileWriteNoPermission) } : nil
+        #else
+        let failingSave: (() throws -> Void)? = nil
+        #endif
+        switch try Game.add(draft, to: modelContext, allowSameName: confirmed, save: failingSave) {
+        case .added(let game), .existing(let game):
+            onOpen(game)
+            dismiss()
+        case .sameName(let games):
+            pendingDraft = draft
+            nameMatches = games
         }
-        isSearching = false
-    }
-
-    private func importGame(_ result: RAWGGame) {
-        guard !existingRAWGIDs.contains(result.id) else {
-            duplicateMessage = "Bu RAWG oyunu zaten kütüphanenizde. Yeni kayıt oluşturulmadı."
-            return
-        }
-        let title = result.name.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !title.isEmpty else {
-            errorMessage = "RAWG sonucu geçerli bir oyun adı içermiyor. Elle ekleme kullanılabilir."
-            return
-        }
-        onSave(Game(title: title, source: "rawg", externalID: result.id,
-                    sourceURL: result.sourceURL?.absoluteString, releaseDate: result.released,
-                    platforms: result.platformNames))
-        dismiss()
-    }
-}
-
-private struct RAWGResultRow: View {
-    let result: RAWGGame
-    let onImport: () -> Void
-
-    var body: some View {
-        HStack(alignment: .top) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(result.name).font(.headline)
-                if let released = result.released { Text("Çıkış: \(released)").font(.caption) }
-                if !result.platformNames.isEmpty {
-                    Text(result.platformNames.joined(separator: ", ")).font(.caption).foregroundStyle(.secondary)
-                }
-                if let url = result.sourceURL { Link("RAWG kaynağı", destination: url).font(.caption) }
-            }
-            Spacer()
-            Button("Ekle", action: onImport)
-        }
-        .padding(.vertical, 4)
     }
 }
 

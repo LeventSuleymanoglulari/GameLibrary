@@ -10,17 +10,17 @@ import SwiftData
 final class Game {
     var title: String
     var addedDate: Date
-    var source: String
+    var source: String = "manual"
     var externalID: Int?
     var sourceURL: String?
     var releaseDate: String?
-    var platforms: [String]
+    var platforms: [String] = []
 
     // Bu alanlar 3. aşamada düzenleme arayüzüne bağlanacaktır. Dört sekme
     // şimdiden aynı kayıtları filtrelediği için kayıtlar çoğaltılmaz.
-    var isInLibrary: Bool
-    var isWishlisted: Bool
-    var isToPlay: Bool
+    var isInLibrary: Bool = false
+    var isWishlisted: Bool = false
+    var isToPlay: Bool = false
 
     init(
         title: String,
@@ -41,5 +41,57 @@ final class Game {
         self.isInLibrary = false
         self.isWishlisted = false
         self.isToPlay = false
+    }
+}
+
+struct GameDraft {
+    let title: String
+    let catalog: RAWGGame?
+
+    static func manual(_ title: String) throws -> Self {
+        let title = title.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else { throw RAWGServiceError.invalidResponse }
+        return Self(title: title, catalog: nil)
+    }
+
+    static func rawg(_ game: RAWGGame) throws -> Self {
+        guard game.id > 0, !game.name.isEmpty else { throw RAWGServiceError.invalidResponse }
+        return Self(title: game.name, catalog: game)
+    }
+
+    private init(title: String, catalog: RAWGGame?) {
+        self.title = title
+        self.catalog = catalog
+    }
+}
+
+enum AddGameResult {
+    case added(Game), existing(Game), sameName([Game])
+}
+
+extension Game {
+    @MainActor static func add(
+        _ draft: GameDraft, to context: ModelContext, allowSameName: Bool = false,
+        save: (() throws -> Void)? = nil
+    ) throws -> AddGameResult {
+        let games = try context.fetch(FetchDescriptor<Game>())
+        if let catalog = draft.catalog,
+           let existing = games.first(where: { $0.source == "rawg" && $0.externalID == catalog.id }) {
+            return .existing(existing)
+        }
+        let matches = games.filter {
+            $0.title.trimmingCharacters(in: .whitespacesAndNewlines)
+                .compare(draft.title, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+        }
+        if !allowSameName, !matches.isEmpty { return .sameName(matches) }
+        let game = Game(title: draft.title, source: draft.catalog == nil ? "manual" : "rawg",
+                        externalID: draft.catalog?.id, sourceURL: draft.catalog?.sourceURL.absoluteString,
+                        releaseDate: draft.catalog?.released, platforms: draft.catalog?.platformNames ?? [])
+        context.insert(game)
+        do {
+            if let save { try save() } else { try context.save() }
+        }
+        catch { context.delete(game); throw error }
+        return .added(game)
     }
 }
