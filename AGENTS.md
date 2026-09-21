@@ -2,24 +2,33 @@
 
 ## Project Structure & Module Organization
 
-This repository plans **Oyun Kütüphanesi**, a PC desktop application for tracking games, statuses, and personal ratings. It currently contains documentation only:
+This repository develops **Oyun Kütüphanesi**, a local macOS application built with SwiftUI and SwiftData.
 
-- `README.md`: project overview and links.
-- `docs/proje-plani.md`: requirements, proposed rules, open decisions, and acceptance scenarios K1–K12.
-- `docs/oyun-kutuphanesi-gorsel.html`: standalone visual explanation with inline CSS and SVG.
-- `docs/assets/oyun-kutuphanesi-onizleme.png`: preview embedded in the README.
+- `Game library/Game library/`: application, game model, RAWG search and Keychain storage.
+- `Game library/Game libraryTests/`: focused XCTest behavior checks.
+- `Game library/Game libraryUITests/`: native application smoke tests.
+- `Game library/Game library.xcodeproj`: Xcode project and test targets.
+- `README.md`: setup, usage and verification commands.
+- `ROADMAP.md`: phased delivery and acceptance criteria.
+- `docs/`: product decisions, acceptance scenarios K1–K20 and verification evidence.
+- `docs/assets/`: screenshots and the static visual preview.
 
-There are no application source or test directories. Keep supporting documents in `docs/` and images in `docs/assets/`.
+Keep supporting documents in `docs/` and images in `docs/assets/`.
 
 ## Build, Test, and Development Commands
 
-No dependency manifest, build system, application runner, or automated test command exists yet.
+Use Xcode 27 or later with the macOS SDK. The app supports macOS 26 or later.
 
-- `open docs/oyun-kutuphanesi-gorsel.html` (macOS): preview the visual in a browser. On other systems, open the file directly with a browser.
-- `git diff --check`: check tracked changes for whitespace errors before committing.
-- `git diff`: review the scope and wording of changes.
+```sh
+xcodebuild -project "Game library/Game library.xcodeproj" -scheme "Game library" -destination 'platform=macOS' build
+xcodebuild -project "Game library/Game library.xcodeproj" -scheme "Game library" -destination 'platform=macOS' '-only-testing:Game libraryTests' test
+xcodebuild -project "Game library/Game library.xcodeproj" -scheme "Game library" -destination 'platform=macOS' test
+git diff --check
+```
 
-The HTML needs no build step. Google Fonts requires internet access; system fonts provide an offline fallback.
+Native UI tests need an active macOS session. Use temporary or in-memory test stores, never the user's library or RAWG credentials. No separate linter is configured.
+
+`open docs/oyun-kutuphanesi-gorsel.html` opens the standalone design visual. It needs no build step. Google Fonts requires internet access; system fonts provide an offline fallback.
 
 ## Coding Style & Naming Conventions
 
@@ -27,9 +36,11 @@ Keep project-facing documentation in Turkish and preserve established UI labels.
 
 ## Testing Guidelines
 
-No testing framework, test naming convention, or coverage threshold is established. For documentation changes, check relative links and consistency between the README, plan, and visual. For visual changes, inspect desktop and narrow layouts, keyboard scrolling, and offline font fallback; update the preview image when needed.
+Use XCTest for the existing behavior seams. Cover persisted identity, migration, import validation and search behavior with deterministic local data. Keep successful live RAWG checks separate from fixture-backed tests and report when a real key was not available.
 
-K1–K12 describe future application acceptance checks, not currently passing tests. Distinguish confirmed requirements from proposals; platform, desktop technology, storage, and rating scale remain undecided.
+For documentation changes, check relative links and consistency between the README, roadmap, plan and visual. For visual changes, inspect the native window and keyboard behavior, and include a screenshot when relevant. The static HTML is a design artifact, not the application.
+
+K1–K20 are acceptance contracts. Mark a scenario as verified only with recorded evidence. Platform, storage, rating scale and independent status rules are defined in `docs/ilk-surum-kararlari.md`. Status and rating editing belong to phase 3.
 
 ## Commit & Pull Request Guidelines
 

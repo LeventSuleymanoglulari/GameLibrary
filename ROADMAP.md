@@ -3,10 +3,10 @@
 Amaç, oyunları, oynama durumlarını ve kişisel puanları tek yerde takip eden
 bir PC masaüstü uygulamasının ilk kullanılabilir sürümünü hazırlamak.
 
-Depoda native macOS proje iskeleti, belgeler ve görsel taslak bulunur.
+Depoda native macOS uygulaması, belgeler ve görsel taslak bulunur.
 Bu yol haritası [proje planındaki](docs/proje-plani.md) geliştirme sırasını takip
 eder. Ayrıntılı kullanım kuralları ve K1–K20 kabul senaryoları için kaynak
-proje planıdır. API içe aktarma henüz uygulanmamıştır.
+proje planıdır. 2. aşamanın kanıtları [doğrulama kaydında](docs/asama-2-dogrulama.md) tutulur.
 
 ## Tamamlanan hazırlık
 
@@ -14,8 +14,8 @@ proje planıdır. API içe aktarma henüz uygulanmamıştır.
 - [x] Önerilen çalışma kurallarını ve açık kararları kaydetmek.
 - [x] Kabul senaryolarını ve görsel anlatımı hazırlamak.
 
-Bu maddeler belge hazırlığını gösterir; uygulama kabul senaryoları henüz
-çalıştırılmamıştır.
+Bu maddeler belge hazırlığını gösterir; uygulama kontrolleri ilgili aşamalarda
+ayrı doğrulanır.
 
 ## 1. İlk sürüm kararlarını netleştir
 
@@ -36,20 +36,24 @@ kayıtlıdır; ilk sürümün kapsamı ve geçmesi gereken kabul senaryoları be
 
 - [x] Seçilen teknolojiyle çalıştırılabilir masaüstü uygulamasını oluştur;
   kurulum ve geliştirme komutlarını README'ye ekle.
-- [ ] RAWG anahtarını kullanıcı ayarlarından alıp Keychain'de sakla; eksik anahtarda elle ekleme sun.
-- [ ] Kullanıcı komutuyla katalog araması, sayfalama, sonuç seçimi ve onayla içe aktarma akışını ekle.
-- [ ] Kaynak kimliğini ve isteğe bağlı katalog alanlarını yerel kayda ekle; mevcut elle kayıtları koruyan veri geçişini doğrula.
-- [ ] Aynı dış kimliği yeniden eklemeyi kayıt çoğaltmadan işle; aynı adlı oyunları otomatik birleştirme.
-- [ ] Elle eklemeyi her zaman erişilebilir tut; başarısız aramadaki adı forma taşı.
-- [ ] RAWG kaynak bağlantısını verinin gösterildiği görünümlere ekle.
-- [ ] Tüm Oyunlar, Kütüphanem, Wishlist ve Oynanacak sekmelerini oluştur.
-- [ ] Sekmeleri aynı oyun kayıtlarının görünümleri olarak kur; sekme başına
+- [x] RAWG anahtarını kullanıcı ayarlarından alıp Keychain'de sakla; eksik anahtarda elle ekleme sun.
+- [x] Kullanıcı komutuyla katalog araması, sayfalama, sonuç seçimi ve onayla içe aktarma akışını ekle.
+- [x] Kaynak kimliğini ve isteğe bağlı katalog alanlarını yerel kayda ekle; mevcut elle kayıtları koruyan veri geçişini doğrula.
+- [x] Aynı dış kimliği yeniden eklemeyi kayıt çoğaltmadan işle; aynı adlı oyunları otomatik birleştirme.
+- [x] Elle eklemeyi her zaman erişilebilir tut; başarısız aramadaki adı forma taşı.
+- [x] RAWG kaynak bağlantısını verinin gösterildiği görünümlere ekle.
+- [x] Tüm Oyunlar, Kütüphanem, Wishlist ve Oynanacak sekmelerini oluştur.
+- [x] Sekmeleri aynı oyun kayıtlarının görünümleri olarak kur; sekme başına
   ayrı oyun kaydı oluşturma.
 - [x] Durumsuz ve puansız kartta yalnızca oyun adını göster.
 
 **Tamamlanma ölçütü:** Uygulama açılır, eklenen oyun Tüm Oyunlar'da görünür,
 tam olarak dört sekme vardır ve boş durum kutuları görünmez (K1–K2).
 Katalogdan ve elle ekleme yolları ile tekrar içe aktarma doğrulanır (K13–K16).
+
+Uygulama ve otomatik kontroller tamamlandı. Katalog testleri yerel yanıtlarla
+çalışır; geçerli RAWG anahtarıyla canlı servis kabulü henüz yapılmadı.
+[Kanıtlar ve kalan sınırlar](docs/asama-2-dogrulama.md) ayrı kayıtlıdır.
 
 ## 3. Durum ve puan düzenlemeyi ekle
 
