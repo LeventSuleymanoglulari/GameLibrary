@@ -3,11 +3,10 @@
 Amaç, oyunları, oynama durumlarını ve kişisel puanları tek yerde takip eden
 bir PC masaüstü uygulamasının ilk kullanılabilir sürümünü hazırlamak.
 
-Depo şu anda yalnızca belgeleri ve görsel taslağı içerir; uygulama geliştirmesi
-başlamamıştır. Bu yol haritası [proje planındaki](docs/proje-plani.md) geliştirme
-sırasını takip eder. Ayrıntılı kullanım kuralları ve K1–K12 kabul senaryoları
-için kaynak proje planıdır. Önerilen davranışlar, aşağıdaki ilk aşamada
-kararlaştırılmadan kesin gereksinim sayılmaz.
+Depoda native macOS proje iskeleti, belgeler ve görsel taslak bulunur.
+Bu yol haritası [proje planındaki](docs/proje-plani.md) geliştirme sırasını takip
+eder. Ayrıntılı kullanım kuralları ve K1–K20 kabul senaryoları için kaynak
+proje planıdır. API içe aktarma henüz uygulanmamıştır.
 
 ## Tamamlanan hazırlık
 
@@ -22,7 +21,7 @@ Bu maddeler belge hazırlığını gösterir; uygulama kabul senaryoları henüz
 
 - [x] Hedef işletim sistemi ve desteklenen sürümleri belirle: macOS 26 ve sonrası.
 - [x] Masaüstü teknolojisini ve geliştirme araçlarını seç: SwiftUI, SwiftData ve Xcode 27.
-- [x] Elle oyun eklemeyi karara bağla.
+- [x] Ücretsiz RAWG API'sinden içe aktarmayı öncelikli yol, elle eklemeyi sürekli kullanılabilir yedek yol olarak belirle.
 - [x] Yerel SwiftData kalıcılığını ve yeniden açılışta kayıtların korunmasını belirle.
 - [x] İsteğe bağlı 1–10 tam sayı puan ölçeğini belirle.
 - [x] Durumların bağımsız seçilmesini ve otomatik durum değişikliği yapılmamasını karara bağla.
@@ -37,15 +36,20 @@ kayıtlıdır; ilk sürümün kapsamı ve geçmesi gereken kabul senaryoları be
 
 - [x] Seçilen teknolojiyle çalıştırılabilir masaüstü uygulamasını oluştur;
   kurulum ve geliştirme komutlarını README'ye ekle.
-- [x] Kararlaştırılan yöntemle oyun eklemeyi ve oyun adını kartta göstermeyi sağla.
-- [x] Tüm Oyunlar, Kütüphanem, Wishlist ve Oynanacak sekmelerini oluştur.
-- [x] Sekmeleri aynı oyun kayıtlarının görünümleri olarak kur; sekme başına
+- [ ] RAWG anahtarını kullanıcı ayarlarından alıp Keychain'de sakla; eksik anahtarda elle ekleme sun.
+- [ ] Kullanıcı komutuyla katalog araması, sayfalama, sonuç seçimi ve onayla içe aktarma akışını ekle.
+- [ ] Kaynak kimliğini ve isteğe bağlı katalog alanlarını yerel kayda ekle; mevcut elle kayıtları koruyan veri geçişini doğrula.
+- [ ] Aynı dış kimliği yeniden eklemeyi kayıt çoğaltmadan işle; aynı adlı oyunları otomatik birleştirme.
+- [ ] Elle eklemeyi her zaman erişilebilir tut; başarısız aramadaki adı forma taşı.
+- [ ] RAWG kaynak bağlantısını verinin gösterildiği görünümlere ekle.
+- [ ] Tüm Oyunlar, Kütüphanem, Wishlist ve Oynanacak sekmelerini oluştur.
+- [ ] Sekmeleri aynı oyun kayıtlarının görünümleri olarak kur; sekme başına
   ayrı oyun kaydı oluşturma.
 - [x] Durumsuz ve puansız kartta yalnızca oyun adını göster.
 
-**Tamamlanma ölçütü:** Tamamlandı. Uygulama açılır, eklenen oyun Tüm
-Oyunlar'da görünür, tam olarak dört sekme vardır ve boş durum kutuları
-görünmez (K1–K2).
+**Tamamlanma ölçütü:** Uygulama açılır, eklenen oyun Tüm Oyunlar'da görünür,
+tam olarak dört sekme vardır ve boş durum kutuları görünmez (K1–K2).
+Katalogdan ve elle ekleme yolları ile tekrar içe aktarma doğrulanır (K13–K16).
 
 ## 3. Durum ve puan düzenlemeyi ekle
 
@@ -72,11 +76,14 @@ kararlaştırılan davranışlara uygun sürümleri geçer.
 - [ ] Uygulama kapatılıp açıldığında kayıtların korunduğunu doğrula.
 - [ ] Kaydetme başarısız olduğunda başarı gösterme; kullanıcıya hata bildir.
 - [ ] Boş sekmeler için açıklayıcı mesajlar ekle.
+- [ ] API anahtarı, kota, ağ, zaman aşımı ve eksik veri hatalarını doğrula.
+- [ ] İçe aktarılan kayıtların çevrimdışı açılmasını, düzenlenmesini ve mevcut elle kayıtların korunmasını doğrula.
+- [ ] Anahtarın günlüklerde görünmediğini ve kişisel verilerin API'ye gönderilmediğini doğrula.
 - [ ] Durumların sekmelere yansımasını, puan doğrulamasını ve kayıt davranışını
   kapsayan odaklı otomatik kontrolleri ekle; test komutunu README'ye yaz.
 
 **Tamamlanma ölçütü:** K10–K11'in kararlaştırılan sürümleri geçer; yeniden
-açılış ve başarısız kayıt senaryolarının sonuçları kaydedilir.
+açılış ve başarısız kayıt senaryolarının sonuçları kaydedilir. K17–K20 geçer.
 
 ## 5. İlk masaüstü sürümünü hazırla
 
@@ -84,7 +91,8 @@ açılış ve başarısız kayıt senaryolarının sonuçları kaydedilir.
 
 - [ ] Uygulamayı seçilen işletim sistemi için kurulabilir paket haline getir.
 - [ ] Paketleme, kurulum ve çalıştırma adımlarını README'de belgele.
-- [ ] Kurulan uygulamada geçerli K1–K12 senaryolarını doğrula; test ve
+- [ ] Dağıtım öncesi RAWG ücretsiz kullanım koşullarını ve atıf bağlantılarını yeniden kontrol et.
+- [ ] Kurulan uygulamada geçerli K1–K20 senaryolarını doğrula; test ve
   varsa lint komutlarını çalıştır.
 - [ ] Doğrulanan uygulama sürümünü, işletim sistemini, sonuçları ve bilinen
   sınırlamaları sürüm notlarına kaydet.
@@ -94,7 +102,7 @@ senaryoları geçer ve ilk sürümün kullanım adımları belgelenmiştir.
 
 ## İlk sürüm dışında
 
-Steam/Epic bağlantısı, mağaza kataloğu, arkadaş sistemi, herkese açık profil,
+Steam/Epic hesap bağlantısı, toplu katalog indirme, arkadaş sistemi, herkese açık profil,
 oyun başlatma ve cihazlar arası eşitleme mevcut kapsamda taahhüt edilmez.
 Ayrıca istenirse kapsam ve veri kullanımı değerlendirilir.
 

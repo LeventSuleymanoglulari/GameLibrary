@@ -7,6 +7,13 @@ geliştirilen yerel bir macOS masaüstü uygulaması.
 Ürün ve davranış seçimleri [ilk sürüm kararlarında](docs/ilk-surum-kararlari.md)
 ayrıntılı olarak kayıtlıdır.
 
+Planlanan oyun ekleme akışı, ücretsiz RAWG API'sinde arama yapıp seçilen oyunu
+içe aktarmaktır. Katalogda bulunamayan oyunlar ve bağlantı sorunları için
+**Elle ekle** her zaman kullanılabilir. Kaydedilmiş oyunlar çevrimdışı çalışır.
+RAWG'nin ücretsiz kişisel kullanım planı API anahtarı, istek kotası ve kaynak
+bağlantısı gerektirir. [Erişim ve yedek yol kuralları](docs/ilk-surum-kararlari.md#ücretsiz-katalog-ve-erişim)
+ilk sürüm kararlarında açıklanmıştır. Bu akış henüz uygulanmamıştır.
+
 ## Geliştirme ortamı
 
 Xcode 27 veya sonrası ve macOS 26 SDK'sı gerekir. Projeyi Xcode ile açmak için
@@ -25,11 +32,11 @@ xcodebuild -project "Game library/Game library.xcodeproj" -scheme "Game library"
   tamamlanma ölçütlerini içerir.
 - [Proje planı](docs/proje-plani.md) kapsamı, kullanım kurallarını, geliştirme
   adımlarını ve kabul ölçütlerini içerir.
-- [Görsel anlatım](docs/oyun-kutuphanesi-gorsel.html) dört sekmeyi ve oyun
-  kartlarını teknik olmayan kullanıcılar için açıklar. HTML dosyasını indirip
+- [Görsel anlatım](docs/oyun-kutuphanesi-gorsel.html) API'den içe aktarmayı,
+  elle ekleme yedek yolunu, dört sekmeyi ve oyun kartlarını açıklar. HTML dosyasını indirip
   tarayıcıda açın. GitHub dosya sayfası HTML'yi uygulama gibi çalıştırmaz.
 
-![Dört sekme ve oyunların altındaki durum kutuları](docs/assets/oyun-kutuphanesi-onizleme.png)
+![API'den oyun içe aktarma ve elle ekleme yedek yolu](docs/assets/oyun-kutuphanesi-onizleme.png)
 
 ## Dört sekme
 
@@ -56,8 +63,7 @@ Hades II
 [Wishlist] [Oynanacak]
 ```
 
-Puan isteğe bağlıdır ve 1–10 arasında tam sayı olarak verilir. Puan ve durum
-düzenleme akışı sonraki aşamada eklenecektir.
+Puan isteğe bağlıdır ve 1 ile 10 arasında tam sayıdır. Örnekteki puan temsilidir.
 
 ## Projenin durumu
 

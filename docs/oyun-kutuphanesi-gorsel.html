@@ -32,10 +32,66 @@
 <body>
   <main>
     <header>
-      <p class="eyebrow">PC UYGULAMASI · PROJE TASLAĞI</p>
+      <p class="eyebrow">MACOS UYGULAMASI · PROJE TASLAĞI</p>
       <h1>Oyun kütüphanesi nasıl kullanılacak?</h1>
-      <p class="intro">Oyunlarını tek yerde topla. Sahip olduklarını, istediklerini ve oynayacaklarını sekmelerden bul. Her oyunun altında yalnızca seçtiğin bilgiler görünsün.</p>
+      <p class="intro">Oyununu ücretsiz RAWG kataloğunda ara ve seçerek içe aktar. Bulamazsan veya bağlantın yoksa elle ekle. Kaydettiğin oyunları çevrimdışı takip et.</p>
     </header>
+    <figure>
+      <div class="canvas" tabindex="0" role="region" aria-label="API'den içe aktarma ve elle ekleme akışı. Küçük ekranda yatay kaydırılabilir.">
+        <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="oyun-ice-aktarma-title oyun-ice-aktarma-desc">
+          <title id="oyun-ice-aktarma-title">Katalogdan içe aktar, gerekirse elle ekle</title>
+          <desc id="oyun-ice-aktarma-desc">Kullanıcı RAWG'de arayıp oyun seçer veya sonuç, bağlantı ya da anahtar yoksa elle ad girer; her iki yol kullanıcı onayıyla aynı yerel listeye kaydeder ve aynı RAWG kimliği mevcut kaydı açar.</desc>
+          <defs>
+            <marker id="import-arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+            <marker id="import-arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/></marker>
+            <marker id="import-arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#2e5aa8"/></marker>
+          </defs>
+          <rect width="1280" height="720" fill="#f5f5f5"/>
+          <text x="40" y="48" class="heading">Önce katalogdan ara. Elle ekle her zaman kullanılabilir.</text>
+
+          <path d="M640 160 V240" fill="none" stroke="#2e5aa8" marker-end="url(#import-arrow-link)"/>
+          <path d="M500 304 H360" fill="none" stroke="#4f5d75" marker-end="url(#import-arrow)"/>
+          <path d="M780 304 H920" fill="none" stroke="#4f5d75" stroke-dasharray="4,4" marker-end="url(#import-arrow)"/>
+          <path d="M200 344 V472 Q200 480 208 480 H480" fill="none" stroke="#4f5d75" marker-end="url(#import-arrow)"/>
+          <path d="M1080 344 V472 Q1080 480 1072 480 H800" fill="none" stroke="#4f5d75" marker-end="url(#import-arrow)"/>
+          <path d="M640 528 V568" fill="none" stroke="#4f5d75" marker-end="url(#import-arrow)"/>
+
+          <rect x="396" y="272" width="64" height="24" fill="#f5f5f5"/>
+          <text x="428" y="288" text-anchor="middle">EVET</text>
+          <rect x="812" y="272" width="76" height="24" fill="#f5f5f5"/>
+          <text x="848" y="288" text-anchor="middle">HAYIR</text>
+
+          <rect x="480" y="80" width="320" height="80" rx="8" fill="rgba(235,108,54,0.08)" stroke="#eb6c36"/>
+          <text x="640" y="112" text-anchor="middle" class="heading">RAWG kataloğunda ara</text>
+          <text x="640" y="140" text-anchor="middle" class="muted">İnternet ve API anahtarı gerekir.</text>
+
+          <polygon points="640,240 780,304 640,368 500,304" fill="#fff" stroke="#2d3142"/>
+          <text x="640" y="300" text-anchor="middle">Oyun bulundu</text>
+          <text x="640" y="324" text-anchor="middle">mu?</text>
+
+          <rect x="40" y="264" width="320" height="80" rx="8" class="step"/>
+          <text x="200" y="296" text-anchor="middle" class="heading">Doğru sonucu seç</text>
+          <text x="200" y="324" text-anchor="middle" class="muted">Ad, çıkış tarihi ve platformlar</text>
+
+          <rect x="920" y="264" width="320" height="80" rx="8" class="step"/>
+          <text x="1080" y="296" text-anchor="middle" class="heading">Elle ekle</text>
+          <text x="1080" y="324" text-anchor="middle" class="muted">Aranan adı koru veya düzelt.</text>
+          <text x="832" y="200" class="muted">Sonuç, bağlantı veya anahtar yoksa</text>
+          <text x="832" y="224" class="muted">ya da API hata verirse elle ekle.</text>
+
+          <rect x="480" y="448" width="320" height="80" rx="8" class="step"/>
+          <text x="640" y="480" text-anchor="middle" class="heading">Ekle ile onayla</text>
+          <text x="640" y="508" text-anchor="middle" class="muted">Başarılı kayıttan sonra listede.</text>
+
+          <rect x="480" y="568" width="320" height="64" rx="20" fill="rgba(45,49,66,0.05)" stroke="#4f5d75"/>
+          <text x="640" y="596" text-anchor="middle" class="heading">Tüm Oyunlar</text>
+          <text x="640" y="620" text-anchor="middle" class="muted">Yerel kayıt · çevrimdışı kullanım</text>
+          <line x1="40" y1="656" x2="1240" y2="656" stroke="#bfc0c0"/>
+          <text x="40" y="688" class="muted">Mavi ok: katalog sorgusu · Kesik ok: elle ekleme yedek yolu · Düz ok: ekleme adımları</text>
+        </svg>
+      </div>
+      <figcaption>Aynı RAWG kimliği yeniden eklenirse mevcut oyun açılır; durumlar ve kişisel puan korunur. Arama tek başına kayıt oluşturmaz. Yerel kayıt hatası başarı olarak gösterilmez. Bu şema genel akıştır; aynı adlı oyunlar ve hata kuralları <a href="ilk-surum-kararlari.md">ilk sürüm kararlarında</a> açıklanır.</figcaption>
+    </figure>
     <figure>
       <div class="canvas" tabindex="0" role="region" aria-label="Oyun kütüphanesi şeması. Küçük ekranda yatay kaydırılabilir.">
         <svg viewBox="0 0 1280 720" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="oyun-kutuphanesi-gorsel-title oyun-kutuphanesi-gorsel-desc">
@@ -72,7 +128,7 @@
           <text x="408" y="260" class="heading">Kartlar böyle bilgi verir</text>
 
           <rect x="40" y="284" width="320" height="80" rx="8" class="step"/>
-          <text x="56" y="316" class="heading">1. Oyununu ekle</text>
+          <text x="56" y="316" class="heading">1. İçe aktar veya elle ekle</text>
           <text x="56" y="344" class="muted">Tüm Oyunlar içinde görünsün.</text>
           <rect x="40" y="404" width="320" height="80" rx="8" class="step"/>
           <text x="56" y="436" class="heading">2. Durumlarını seç</text>
@@ -115,7 +171,7 @@
       </div>
       <figcaption>Oynandı, Bitti ve Puan ayrı sekmeler değildir. Durumu veya puanı olmayan oyunlarda boş kutu görünmez. Küçük ekranda şemayı yatay kaydırabilirsiniz.</figcaption>
     </figure>
-    <footer>Bu görsel planı açıklar, çalışan uygulama değildir. Oyunlar ve 9/10 puanı örnektir. Puan ölçeği henüz seçilmedi. Çevrimdışı açıldığında sistem yazı tipleri kullanılır.</footer>
+    <footer>Bu görsel planı açıklar, çalışan uygulama değildir. Oyunlar ve 9/10 puanı örnektir; kişisel puan 1–10 tam sayıdır. RAWG'nin ücretsiz kişisel kullanım planı anahtar, kota ve kaynak bağlantısı gerektirir. <a href="ilk-surum-kararlari.md#ücretsiz-katalog-ve-erişim">API koşulları ve kaynaklar</a>. Çevrimdışı açıldığında sistem yazı tipleri kullanılır.</footer>
   </main>
 </body>
 </html>
