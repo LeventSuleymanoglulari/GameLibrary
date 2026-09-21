@@ -35,16 +35,17 @@ kayıtlıdır; ilk sürümün kapsamı ve geçmesi gereken kabul senaryoları be
 
 Ön koşul: 1. aşamadaki kararların tamamlanması.
 
-- [ ] Seçilen teknolojiyle çalıştırılabilir masaüstü uygulamasını oluştur;
+- [x] Seçilen teknolojiyle çalıştırılabilir masaüstü uygulamasını oluştur;
   kurulum ve geliştirme komutlarını README'ye ekle.
-- [ ] Kararlaştırılan yöntemle oyun eklemeyi ve oyun adını kartta göstermeyi sağla.
-- [ ] Tüm Oyunlar, Kütüphanem, Wishlist ve Oynanacak sekmelerini oluştur.
-- [ ] Sekmeleri aynı oyun kayıtlarının görünümleri olarak kur; sekme başına
+- [x] Kararlaştırılan yöntemle oyun eklemeyi ve oyun adını kartta göstermeyi sağla.
+- [x] Tüm Oyunlar, Kütüphanem, Wishlist ve Oynanacak sekmelerini oluştur.
+- [x] Sekmeleri aynı oyun kayıtlarının görünümleri olarak kur; sekme başına
   ayrı oyun kaydı oluşturma.
-- [ ] Durumsuz ve puansız kartta yalnızca oyun adını göster.
+- [x] Durumsuz ve puansız kartta yalnızca oyun adını göster.
 
-**Tamamlanma ölçütü:** Uygulama açılır, eklenen oyun Tüm Oyunlar'da görünür,
-tam olarak dört sekme vardır ve boş durum kutuları görünmez (K1–K2).
+**Tamamlanma ölçütü:** Tamamlandı. Uygulama açılır, eklenen oyun Tüm
+Oyunlar'da görünür, tam olarak dört sekme vardır ve boş durum kutuları
+görünmez (K1–K2).
 
 ## 3. Durum ve puan düzenlemeyi ekle
 
