@@ -34,7 +34,7 @@ kayıtlıdır; ilk sürümün kapsamı ve geçmesi gereken kabul senaryoları be
 
 Ön koşul: 1. aşamadaki kararların tamamlanması.
 
-- [ ] Seçilen teknolojiyle çalıştırılabilir masaüstü uygulamasını oluştur;
+- [x] Seçilen teknolojiyle çalıştırılabilir masaüstü uygulamasını oluştur;
   kurulum ve geliştirme komutlarını README'ye ekle.
 - [ ] RAWG anahtarını kullanıcı ayarlarından alıp Keychain'de sakla; eksik anahtarda elle ekleme sun.
 - [ ] Kullanıcı komutuyla katalog araması, sayfalama, sonuç seçimi ve onayla içe aktarma akışını ekle.
@@ -45,7 +45,7 @@ kayıtlıdır; ilk sürümün kapsamı ve geçmesi gereken kabul senaryoları be
 - [ ] Tüm Oyunlar, Kütüphanem, Wishlist ve Oynanacak sekmelerini oluştur.
 - [ ] Sekmeleri aynı oyun kayıtlarının görünümleri olarak kur; sekme başına
   ayrı oyun kaydı oluşturma.
-- [ ] Durumsuz ve puansız kartta yalnızca oyun adını göster.
+- [x] Durumsuz ve puansız kartta yalnızca oyun adını göster.
 
 **Tamamlanma ölçütü:** Uygulama açılır, eklenen oyun Tüm Oyunlar'da görünür,
 tam olarak dört sekme vardır ve boş durum kutuları görünmez (K1–K2).

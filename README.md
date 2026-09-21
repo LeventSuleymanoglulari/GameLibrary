@@ -67,6 +67,7 @@ Puan isteğe bağlıdır ve 1 ile 10 arasında tam sayıdır. Örnekteki puan te
 
 ## Projenin durumu
 
-Native macOS proje iskeleti kurulmuştur ve 1. aşamadaki kararlar tamamlanmıştır.
-Oyun listesi, dört sekme, durum/puan düzenleme ve kalıcılığın kabul kontrolleri
-sonraki aşamalardadır. Görsel anlatım bir taslaktır; çalışan uygulama değildir.
+Native macOS uygulaması açılır; oyun adıyla kayıt eklenebilir ve **Tüm Oyunlar**,
+**Kütüphanem**, **Wishlist** ve **Oynanacak** aynı oyun kayıtlarının dört
+görünümüdür. Durum/puan düzenleme ve kalıcılığın kabul kontrolleri sonraki
+aşamalardadır. Görsel anlatım bir taslaktır; çalışan uygulama değildir.

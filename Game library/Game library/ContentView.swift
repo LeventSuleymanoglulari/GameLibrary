@@ -2,308 +2,167 @@
 //  ContentView.swift
 //  Game library
 //
-//  Created by Levent Suleymanoglulari on 20/09/2026.
-//
 
-import SwiftUI
 import SwiftData
+import SwiftUI
+
+private enum LibraryTab: CaseIterable, Hashable {
+    case allGames
+    case library
+    case wishlist
+    case toPlay
+
+    var title: String {
+        switch self {
+        case .allGames: "Tüm Oyunlar"
+        case .library: "Kütüphanem"
+        case .wishlist: "Wishlist"
+        case .toPlay: "Oynanacak"
+        }
+    }
+
+    func includes(_ game: Game) -> Bool {
+        switch self {
+        case .allGames: true
+        case .library: game.isInLibrary
+        case .wishlist: game.isWishlisted
+        case .toPlay: game.isToPlay
+        }
+    }
+}
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \Game.addedDate, order: .reverse) private var games: [Game]
 
-    @State private var searchText: String = ""
-    @State private var selectedPlatform: Platform? = nil
-    @State private var selectedStatus: GameStatus? = nil
-
-    @State private var showingAddSheet = false
-    @State private var editingGame: Game?
-
-    private var filteredGames: [Game] {
-        games.filter { game in
-            let matchesSearch: Bool
-            if searchText.isEmpty {
-                matchesSearch = true
-            } else {
-                let haystack = (game.title + " " + (game.notes ?? "")).lowercased()
-                matchesSearch = haystack.contains(searchText.lowercased())
-            }
-
-            let matchesPlatform = selectedPlatform == nil || game.platform == selectedPlatform
-            let matchesStatus = selectedStatus == nil || game.status == selectedStatus
-
-            return matchesSearch && matchesPlatform && matchesStatus
-        }
-    }
+    @State private var selectedTab: LibraryTab = .allGames
+    @State private var isShowingAddGame = false
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                if filteredGames.isEmpty {
-                    ContentUnavailableView("No Games",
-                                           systemImage: "gamecontroller",
-                                           description: Text("Add games from Steam, Epic Games, and more."))
-                } else {
-                    ForEach(filteredGames) { game in
-                        NavigationLink {
-                            GameDetailView(game: game)
-                        } label: {
-                            VStack(alignment: .leading, spacing: 4) {
-                                HStack {
-                                    Text(game.title)
-                                        .font(.headline)
-                                    Spacer()
-                                    Text(game.platform.rawValue)
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                }
-                                HStack {
-                                    Text(game.status.rawValue)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                    Spacer()
-                                    Text(game.addedDate, format: Date.FormatStyle(date: .abbreviated, time: .omitted))
-                                        .font(.caption2)
-                                        .foregroundStyle(.tertiary)
-                                }
-                            }
-                        }
-                        .contextMenu {
-                            Button("Edit") { editingGame = game }
-                            Button(role: .destructive) {
-                                delete(game)
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
+        TabView(selection: $selectedTab) {
+            ForEach(LibraryTab.allCases, id: \.self) { tab in
+                GameListView(games: games.filter(tab.includes), tab: tab)
+                    .tabItem {
+                        Label(tab.title, systemImage: iconName(for: tab))
                     }
-                    .onDelete(perform: delete(offsets:))
-                }
+                    .tag(tab)
             }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 220, ideal: 260)
-#endif
-            .navigationTitle("Library")
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button {
-                        showingAddSheet = true
-                    } label: {
-                        Label("Add Game", systemImage: "plus")
-                    }
-                }
-                ToolbarItem(placement: .primaryAction) {
-                    Menu {
-                        Picker("Platform", selection: Binding(
-                            get: { selectedPlatform ?? Platform?.none ?? nil },
-                            set: { newValue in selectedPlatform = newValue }
-                        )) {
-                            Text("All Platforms").tag(Platform?.none)
-                            ForEach(Platform.allCases, id: \.self) { platform in
-                                Text(platform.rawValue).tag(Platform?.some(platform))
-                            }
-                        }
-
-                        Picker("Status", selection: Binding(
-                            get: { selectedStatus ?? GameStatus?.none ?? nil },
-                            set: { newValue in selectedStatus = newValue }
-                        )) {
-                            Text("All Statuses").tag(GameStatus?.none)
-                            ForEach(GameStatus.allCases, id: \.self) { status in
-                                Text(status.rawValue).tag(GameStatus?.some(status))
-                            }
-                        }
-
-                        Button {
-                            selectedPlatform = nil
-                            selectedStatus = nil
-                        } label: {
-                            Label("Clear Filters", systemImage: "line.3.horizontal.decrease.circle")
-                        }
-                    } label: {
-                        Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
-                    }
-                }
-            }
-            .searchable(text: $searchText, placement: .automatic, prompt: Text("Search games"))
-            .sheet(isPresented: $showingAddSheet) {
-                AddEditGameSheet(
-                    title: "Add Game",
-                    initialGame: nil,
-                    onSave: { title, platform, status, notes in
-                        addGame(title: title, platform: platform, status: status, notes: notes)
-                    }
-                )
-#if os(iOS) || os(visionOS)
-                .presentationDetents([.medium, .large])
-#endif
-            }
-            .sheet(item: $editingGame) { game in
-                AddEditGameSheet(
-                    title: "Edit Game",
-                    initialGame: game,
-                    onSave: { title, platform, status, notes in
-                        updateGame(game, title: title, platform: platform, status: status, notes: notes)
-                    }
-                )
-#if os(iOS) || os(visionOS)
-                .presentationDetents([.medium, .large])
-#endif
-            }
-        } detail: {
-            Text("Select a game")
-                .foregroundStyle(.secondary)
         }
-    }
-
-    private func addGame(title: String, platform: Platform, status: GameStatus, notes: String?) {
-        withAnimation {
-            let game = Game(title: title, platform: platform, status: status, notes: notes)
-            modelContext.insert(game)
+        .frame(minWidth: 620, minHeight: 420)
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                Button {
+                    isShowingAddGame = true
+                } label: {
+                    Label("Oyun Ekle", systemImage: "plus")
+                }
+                .accessibilityHint("Kütüphaneye yalnızca oyun adıyla yeni bir kayıt ekler.")
+            }
         }
-    }
-
-    private func updateGame(_ game: Game, title: String, platform: Platform, status: GameStatus, notes: String?) {
-        withAnimation {
-            game.title = title
-            game.platform = platform
-            game.status = status
-            game.notes = notes
-        }
-    }
-
-    private func delete(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(filteredGames[index])
+        .sheet(isPresented: $isShowingAddGame) {
+            AddGameSheet { title in
+                addGame(named: title)
             }
         }
     }
 
-    private func delete(_ game: Game) {
+    private func iconName(for tab: LibraryTab) -> String {
+        switch tab {
+        case .allGames: "gamecontroller"
+        case .library: "books.vertical"
+        case .wishlist: "heart"
+        case .toPlay: "play.circle"
+        }
+    }
+
+    private func addGame(named title: String) {
         withAnimation {
-            modelContext.delete(game)
+            modelContext.insert(Game(title: title))
         }
     }
 }
 
-private struct GameDetailView: View {
+private struct GameListView: View {
+    let games: [Game]
+    let tab: LibraryTab
+
+    var body: some View {
+        Group {
+            if games.isEmpty {
+                ContentUnavailableView(
+                    emptyTitle,
+                    systemImage: "gamecontroller",
+                    description: Text(emptyDescription)
+                )
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 12) {
+                        ForEach(games) { game in
+                            GameCard(game: game)
+                        }
+                    }
+                    .padding()
+                }
+            }
+        }
+        .navigationTitle(tab.title)
+    }
+
+    private var emptyTitle: String {
+        tab == .allGames ? "Henüz oyun yok" : "Bu sekmede oyun yok"
+    }
+
+    private var emptyDescription: String {
+        tab == .allGames
+            ? "Başlamak için araç çubuğundan Oyun Ekle'yi seçin."
+            : "Oyun durumlarını bir sonraki aşamada düzenleyebilirsiniz."
+    }
+}
+
+private struct GameCard: View {
     let game: Game
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text(game.title)
-                        .font(.title2).bold()
-                    Spacer()
-                    Text(game.platform.rawValue)
-                        .font(.headline)
-                        .foregroundStyle(.secondary)
-                }
-                HStack(spacing: 8) {
-                    Label(game.status.rawValue, systemImage: "checkmark.circle")
-                    Text("Added \(game.addedDate, format: Date.FormatStyle(date: .abbreviated, time: .omitted))")
-                        .foregroundStyle(.secondary)
-                        .font(.subheadline)
-                }
-                if let notes = game.notes, !notes.isEmpty {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text("Notes").font(.headline)
-                        Text(notes)
-                    }
-                } else {
-                    ContentUnavailableView("No Notes", systemImage: "note.text", description: Text("Add notes to keep track of your progress."))
-                }
-            }
+        Text(game.title)
+            .font(.headline)
+            .frame(maxWidth: .infinity, alignment: .leading)
             .padding()
-        }
-        .navigationTitle(game.title)
+            .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
+            .accessibilityLabel(game.title)
     }
 }
 
-private struct AddEditGameSheet: View {
-    let title: String
-    let initialGame: Game?
-    let onSave: (String, Platform, GameStatus, String?) -> Void
+private struct AddGameSheet: View {
+    let onSave: (String) -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @State private var title = ""
 
-    @State private var gameTitle: String = ""
-    @State private var platform: Platform = .steam
-    @State private var status: GameStatus = .backlog
-    @State private var notes: String = ""
-
-    init(title: String, initialGame: Game?, onSave: @escaping (String, Platform, GameStatus, String?) -> Void) {
-        self.title = title
-        self.initialGame = initialGame
-        self.onSave = onSave
+    private var trimmedTitle: String {
+        title.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
     var body: some View {
         NavigationStack {
             Form {
-                Section("Details") {
-                    TextField("Title", text: $gameTitle)
-#if os(iOS)
-                        .textInputAutocapitalization(.words)
-                        .disableAutocorrection(true)
-#endif
-#if os(macOS)
-                        .textCase(nil) // no-op placeholder to keep conditional blocks tidy
-#endif
-
-                    Picker("Platform", selection: $platform) {
-                        ForEach(Platform.allCases, id: \.self) { p in
-                            Text(p.rawValue).tag(p)
-                        }
-                    }
-
-                    Picker("Status", selection: $status) {
-                        ForEach(GameStatus.allCases, id: \.self) { s in
-                            Text(s.rawValue).tag(s)
-                        }
-                    }
-                }
-
-                Section("Notes") {
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 120)
-#if os(iOS)
-                        .disableAutocorrection(false)
-#endif
-                }
+                TextField("Oyun adı", text: $title)
+                    .accessibilityHint("Eklemek istediğiniz oyunun adını girin.")
             }
-            .navigationTitle(title)
+            .navigationTitle("Oyun Ekle")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Vazgeç") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
-                        onSave(gameTitle.trimmingCharacters(in: .whitespacesAndNewlines),
-                               platform,
-                               status,
-                               notes.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : notes)
+                    Button("Ekle") {
+                        onSave(trimmedTitle)
                         dismiss()
                     }
-                    .disabled(gameTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
-            }
-            .onAppear {
-                if let g = initialGame {
-                    gameTitle = g.title
-                    platform = g.platform
-                    status = g.status
-                    notes = g.notes ?? ""
+                    .disabled(trimmedTitle.isEmpty)
                 }
             }
         }
+        .frame(minWidth: 360, minHeight: 160)
     }
 }
 
