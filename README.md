@@ -92,8 +92,9 @@ Puan isteğe bağlıdır ve 1 ile 10 arasında tam sayıdır. Örnekteki puan te
 
 Native macOS uygulamasında katalogdan veya elle oyun eklenebilir. **Tüm Oyunlar**,
 **Kütüphanem**, **Wishlist** ve **Oynanacak** aynı oyun kayıtlarının dört
-görünümüdür. Durum ve puan düzenleme 3. aşamadadır. Görsel anlatım bir taslaktır;
-çalışan uygulama değildir.
+görünümüdür. Bir oyun açılarak beş bağımsız durum düzenlenebilir; uygulanan
+durumlar ve isteğe bağlı 1–10 kişisel puan kartta görünür. Görsel anlatım bir
+taslaktır; çalışan uygulama değildir.
 
 2. aşamanın doğrulama sonuçları ve sınırları
 [doğrulama kaydında](docs/asama-2-dogrulama.md) bulunur.

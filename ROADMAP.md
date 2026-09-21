@@ -59,16 +59,16 @@ Uygulama ve otomatik kontroller tamamlandı. Katalog testleri yerel yanıtlarla
 
 Ön koşul: 2. aşamadaki oyun listesi ve kartların çalışması.
 
-- [ ] Kütüphane, Wishlist, Oynanacak, Oynandı ve Bitti durumlarını seçilen
+- [x] Kütüphane, Wishlist, Oynanacak, Oynandı ve Bitti durumlarını seçilen
   kurallara göre düzenlemeyi sağla.
-- [ ] Yalnızca uygulanmış durumları kartın altında ayrı kutularda göster.
-- [ ] Durum değişikliklerini aynı kaydın göründüğü bütün sekmelere yansıt.
-- [ ] İsteğe bağlı puan verme, değiştirme ve kaldırma işlemlerini ekle.
-- [ ] Boş oyun adı ve geçersiz puan için kararlaştırılan doğrulamayı uygula.
-- [ ] Sekmeleri ve düzenleme kontrollerini klavyeyle kullanılabilir yap;
+- [x] Yalnızca uygulanmış durumları kartın altında ayrı kutularda göster.
+- [x] Durum değişikliklerini aynı kaydın göründüğü bütün sekmelere yansıt.
+- [x] İsteğe bağlı puan verme, değiştirme ve kaldırma işlemlerini ekle.
+- [x] Boş oyun adı ve geçersiz puan için kararlaştırılan doğrulamayı uygula.
+- [x] Sekmeleri ve düzenleme kontrollerini klavyeyle kullanılabilir yap;
   görünür odak ve metinle anlaşılır seçimler sağla.
 
-**Tamamlanma ölçütü:** Durumlar doğru kart kutularını ve sekme üyeliklerini
+**Tamamlanma ölçütü:** Tamamlandı. Durumlar doğru kart kutularını ve sekme üyeliklerini
 belirler; Oynandı, Bitti ve Puan ayrı sekme oluşturmaz. K3–K9 ve K12'nin
 kararlaştırılan davranışlara uygun sürümleri geçer.
 

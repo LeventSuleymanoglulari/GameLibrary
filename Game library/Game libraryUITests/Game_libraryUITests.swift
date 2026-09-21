@@ -20,7 +20,7 @@ final class Game_libraryUITests: XCTestCase {
         screenshot.name = "Phase 2 manual game detail"
         screenshot.lifetime = .keepAlways
         add(screenshot)
-        app.buttons["Kapat"].click()
+        app.buttons["Bitti"].click()
         app.buttons["Oyun Ekle"].click()
         title.click()
         title.typeText("Portal UI")
@@ -28,7 +28,7 @@ final class Game_libraryUITests: XCTestCase {
         let existing = app.buttons["Mevcut kaydı aç: Portal UI"]
         XCTAssertTrue(existing.waitForExistence(timeout: 5))
         existing.click()
-        XCTAssertTrue(app.buttons["Kapat"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Bitti"].waitForExistence(timeout: 5))
     }
 
     @MainActor func testCatalogSelectionRequiresConfirmation() throws {
@@ -52,8 +52,8 @@ final class Game_libraryUITests: XCTestCase {
         screenshot.lifetime = .keepAlways
         self.add(screenshot)
         add.click()
-        XCTAssertTrue(app.buttons["Kapat"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.links["RAWG'de görüntüle"].firstMatch.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.buttons["Bitti"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.links["RAWG kaynağında görüntüle"].waitForExistence(timeout: 5), app.debugDescription)
     }
 
     @MainActor func testFailedSaveRetainsManualInputAndSheet() throws {
@@ -69,5 +69,28 @@ final class Game_libraryUITests: XCTestCase {
         XCTAssertEqual(title.value as? String, "Korunan Oyun")
         XCTAssertTrue(app.staticTexts["Yerel kayıt tamamlanamadı. Girdiğiniz ad korunuyor; tekrar deneyebilirsiniz."].exists)
         XCTAssertTrue(app.buttons["Elle Ekle"].exists)
+    }
+
+    @MainActor func testStatusAndRatingAreEditedFromGameDetail() throws {
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing"]
+        app.launch()
+        app.buttons["Oyun Ekle"].click()
+        let title = app.textFields["manualTitle"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.click()
+        title.typeText("Durum Oyunu")
+        app.buttons["Elle Ekle"].click()
+        XCTAssertTrue(app.checkBoxes["Kütüphanem"].waitForExistence(timeout: 5), app.debugDescription)
+        app.checkBoxes["Kütüphanem"].click()
+        app.menuButtons["Kişisel puan"].click()
+        XCTAssertTrue(app.menuItems["9/10"].waitForExistence(timeout: 5), app.debugDescription)
+        app.menuItems["9/10"].click()
+        XCTAssertEqual(app.menuButtons["Kişisel puan"].value as? String, "9/10")
+        app.buttons["Bitti"].click()
+        let card = app.buttons["gameCard-Durum Oyunu"]
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        XCTAssertTrue((card.value as? String)?.contains("Kütüphane") == true)
+        XCTAssertTrue((card.value as? String)?.contains("Puan: 9/10") == true)
     }
 }

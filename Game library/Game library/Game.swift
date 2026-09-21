@@ -16,11 +16,13 @@ final class Game {
     var releaseDate: String?
     var platforms: [String] = []
 
-    // Bu alanlar 3. aşamada düzenleme arayüzüne bağlanacaktır. Dört sekme
-    // şimdiden aynı kayıtları filtrelediği için kayıtlar çoğaltılmaz.
+    // Dört sekme aynı kayıtları filtreler; durumlar birbirinden bağımsızdır.
     var isInLibrary: Bool = false
     var isWishlisted: Bool = false
     var isToPlay: Bool = false
+    var isPlayed: Bool = false
+    var isCompleted: Bool = false
+    var rating: Int?
 
     init(
         title: String,
@@ -41,6 +43,9 @@ final class Game {
         self.isInLibrary = false
         self.isWishlisted = false
         self.isToPlay = false
+        self.isPlayed = false
+        self.isCompleted = false
+        self.rating = nil
     }
 }
 

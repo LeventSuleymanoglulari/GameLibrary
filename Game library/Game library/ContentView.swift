@@ -48,7 +48,9 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             ForEach(LibraryTab.allCases, id: \.self) { tab in
-                GameListView(games: games.filter(tab.includes), tab: tab)
+                GameListView(games: games.filter(tab.includes), tab: tab) { game in
+                    selectedGame = game
+                }
                     .tabItem { Label(tab.title, systemImage: tab.iconName) }
                     .tag(tab)
             }
@@ -72,13 +74,7 @@ struct ContentView: View {
             }
         }
         .sheet(item: $selectedGame) { game in
-            VStack(alignment: .leading, spacing: 16) {
-                GameCard(game: game)
-                if let date = game.releaseDate { Text("Çıkış: \(date)") }
-                if !game.platforms.isEmpty { Text(game.platforms.joined(separator: ", ")) }
-                Button("Kapat") { selectedGame = nil }
-            }
-            .padding().frame(minWidth: 400)
+            GameDetailSheet(game: game)
         }
     }
 }
@@ -86,6 +82,7 @@ struct ContentView: View {
 private struct GameListView: View {
     let games: [Game]
     let tab: LibraryTab
+    let onOpen: (Game) -> Void
 
     var body: some View {
         Group {
@@ -100,7 +97,12 @@ private struct GameListView: View {
             } else {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 12) {
-                        ForEach(games) { game in GameCard(game: game) }
+                        ForEach(games) { game in
+                            Button { onOpen(game) } label: { GameCard(game: game) }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("gameCard-\(game.title)")
+                                .accessibilityHint("Oyunun durumlarını ve puanını düzenlemek için açar.")
+                        }
                     }
                     .padding()
                 }
@@ -116,14 +118,123 @@ private struct GameCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(game.title).font(.headline)
+            if !statusLabels.isEmpty || game.rating != nil {
+                HStack(spacing: 6) {
+                    ForEach(statusLabels, id: \.self) { label in
+                        Text(label)
+                            .font(.caption.weight(.medium))
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(.tint.opacity(0.14), in: Capsule())
+                    }
+                    if let rating = game.rating {
+                        Text("Puan: \(rating)/10")
+                            .font(.caption.weight(.medium))
+                            .padding(.horizontal, 8).padding(.vertical, 4)
+                            .background(.orange.opacity(0.16), in: Capsule())
+                    }
+                }
+            }
             if game.source == "rawg" {
-                Link("RAWG'de görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL)).font(.subheadline)
+                Text("RAWG kataloğundan eklendi").font(.subheadline).foregroundStyle(.secondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
         .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
-        .accessibilityElement(children: .contain)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(game.title)
+        .accessibilityValue((statusLabels + (game.rating.map { ["Puan: \($0)/10"] } ?? [])).joined(separator: ", "))
+    }
+
+    private var statusLabels: [String] {
+        [
+            game.isInLibrary ? "Kütüphane" : nil,
+            game.isWishlisted ? "Wishlist" : nil,
+            game.isToPlay ? "Oynanacak" : nil,
+            game.isPlayed ? "Oynandı" : nil,
+            game.isCompleted ? "Bitti" : nil
+        ].compactMap { $0 }
+    }
+}
+
+private struct GameDetailSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var modelContext
+    @Bindable var game: Game
+    @State private var errorMessage: String?
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    statusToggle("Kütüphanem", value: $game.isInLibrary)
+                    statusToggle("Wishlist", value: $game.isWishlisted)
+                    statusToggle("Oynanacak", value: $game.isToPlay)
+                    statusToggle("Oynandı", value: $game.isPlayed)
+                    statusToggle("Bitti", value: $game.isCompleted)
+                } header: {
+                    Text("Durumlar")
+                } footer: {
+                    Text("Durumlar birbirinden bağımsızdır; birini değiştirmek diğerini değiştirmez.")
+                }
+                Section {
+                    Menu {
+                        Button("Puanı kaldır") { updateRating(nil) }
+                        Divider()
+                        ForEach(1...10, id: \.self) { rating in
+                            Button("\(rating)/10") { updateRating(rating) }
+                        }
+                    } label: {
+                        LabeledContent("Puan", value: game.rating.map { "\($0)/10" } ?? "Verilmedi")
+                    }
+                    .accessibilityLabel("Kişisel puan")
+                    .accessibilityValue(game.rating.map { "\($0)/10" } ?? "Verilmedi")
+                } header: {
+                    Text("Kişisel puan")
+                }
+                if let releaseDate = game.releaseDate {
+                    Section {
+                        Text("Çıkış: \(releaseDate)")
+                    } header: {
+                        Text("Katalog bilgisi")
+                    }
+                }
+                if !game.platforms.isEmpty { Text(game.platforms.joined(separator: ", ")) }
+                if game.source == "rawg" { Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL)) }
+                if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
+            }
+            .navigationTitle(game.title)
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Bitti") { dismiss() } } }
+        }
+        .frame(minWidth: 440, minHeight: 400)
+    }
+
+    private func statusToggle(_ title: String, value: Binding<Bool>) -> some View {
+        Toggle(title, isOn: Binding(
+            get: { value.wrappedValue },
+            set: { newValue in
+                let oldValue = value.wrappedValue
+                value.wrappedValue = newValue
+                save { value.wrappedValue = oldValue }
+            }
+        ))
+    }
+
+    private func updateRating(_ rating: Int?) {
+        guard rating == nil || (1...10).contains(rating!) else { return }
+        let oldRating = game.rating
+        game.rating = rating
+        save { game.rating = oldRating }
+    }
+
+    private func save(revert: () -> Void) {
+        do {
+            try modelContext.save()
+            errorMessage = nil
+        } catch {
+            revert()
+            errorMessage = "Değişiklik kaydedilemedi. Lütfen tekrar deneyin."
+        }
     }
 }
 

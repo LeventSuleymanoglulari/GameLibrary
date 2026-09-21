@@ -60,6 +60,30 @@ import Synchronization
         XCTAssertEqual(manual.title, "Portal")
     }
 
+    func testIndependentStatusesAndOptionalRatingPersistTogether() throws {
+        let container = try ModelContainer(for: Game.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = ModelContext(container)
+        let game = Game(title: "Hades")
+        game.isInLibrary = true
+        game.isToPlay = true
+        game.isCompleted = true
+        game.rating = 9
+        context.insert(game)
+        try context.save()
+
+        let reopened = ModelContext(container)
+        let saved = try XCTUnwrap(reopened.fetch(FetchDescriptor<Game>()).first)
+        XCTAssertTrue(saved.isInLibrary)
+        XCTAssertTrue(saved.isToPlay)
+        XCTAssertTrue(saved.isCompleted)
+        XCTAssertFalse(saved.isWishlisted)
+        XCTAssertFalse(saved.isPlayed)
+        XCTAssertEqual(saved.rating, 9)
+        saved.rating = nil
+        try reopened.save()
+        XCTAssertNil(try XCTUnwrap(ModelContext(container).fetch(FetchDescriptor<Game>()).first).rating)
+    }
+
     func testSearchSnapshotsQueryDeduplicatesAndRetriesFailedPage() async throws {
         var requests: [(String, Int)] = []
         var failSecond = true
