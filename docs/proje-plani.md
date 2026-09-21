@@ -63,8 +63,16 @@ Hollow Knight örneği Tüm Oyunlar ve Kütüphanem sekmelerinde görünür.
 Bu bölümdeki kurallar ilk sürüm için kesinleştirilmiştir.
 
 - Açılışta Tüm Oyunlar sekmesi seçilir.
-- Oyunlar ilk sürümde adları yazılarak elle eklenir. Boş veya yalnızca boşluk
-  içeren oyun adı kabul edilmez.
+- Oyun eklemenin öncelikli yolu ücretsiz RAWG API'sinde arama yapıp seçilen
+  oyunu içe aktarmaktır. Sonuç yalnızca kullanıcı onayı ve başarılı yerel
+  kayıt sonrasında Tüm Oyunlar'a eklenir.
+- **Elle ekle** her zaman görünür. Sonuç bulunamaması, anahtar eksikliği,
+  çevrimdışı kullanım ve API hatalarında yedek yoldur. Aranan ad forma taşınır;
+  boş veya yalnızca boşluk içeren ad kabul edilmez.
+- API araması kişisel durumları ve puanı doldurmaz. Aynı kaynak ve dış kimlik
+  yeniden içe aktarılırsa mevcut kayıt açılır; durumlar ve puan korunur.
+- Kaydedilmiş oyunlar, durum ve puan düzenleme ile elle ekleme çevrimdışı
+  çalışır. API araması internet ve kullanıcının RAWG anahtarını gerektirir.
 - Kullanıcı bir oyunun durumlarını ekler veya kaldırır. Kart ve sekmeler aynı
   kayıt üzerinden güncellenir. Sekmeden çıkmak oyun kaydını silmez.
 - Durumlar bağımsız seçilir. Bitti seçimi otomatik olarak Oynandı eklemez veya
@@ -79,12 +87,19 @@ Bu bölümdeki kurallar ilk sürüm için kesinleştirilmiştir.
 - Sekmeler ve durum düzenleme kontrolleri klavyeyle kullanılabilir.
   Seçimler yalnızca renkle değil, yazıyla da anlaşılır.
 
-Bu öneriler otomatik bir satın alma veya oynama sırası dayatmaz.
+Bu kurallar otomatik bir satın alma veya oynama sırası dayatmaz.
 Kullanıcı bir oyunu doğrudan Kütüphane veya Oynandı olarak işaretleyebilir.
+
+Sağlayıcı koşulları, anahtar saklama, veri alanları, aynı adlı oyunlar ve hata
+davranışı [içe aktarma sözleşmesinde](ilk-surum-kararlari.md#içe-aktarma-ve-elle-ekleme-sözleşmesi)
+tanımlanmıştır. RAWG arama kataloğu yerel koleksiyondan ayrıdır; **Tüm Oyunlar**
+yalnızca kullanıcının kaydettiği oyunları gösterir.
 
 ## Kullanım örneği
 
-1. Kullanıcı Hades II adlı oyunu ekler. Oyun Tüm Oyunlar sekmesinde görünür.
+1. Kullanıcı Hades II'yi katalogda arar, doğru sonucu seçer ve Ekle ile onaylar.
+   Yerel kayıt başarılı olunca oyun Tüm Oyunlar'da görünür. Arama kullanılamazsa
+   aynı adı Elle ekle formunda doğrulayıp kaydeder.
 2. Wishlist ve Oynanacak durumlarını seçer. Kartın altında iki kutu görünür.
 3. Wishlist sekmesine geçtiğinde aynı oyunu görür.
 4. Oyuna sahip olduğunda Kütüphane durumunu ekler. Oyun Kütüphanem'de de görünür.
@@ -93,7 +108,7 @@ Kullanıcı bir oyunu doğrudan Kütüphane veya Oynandı olarak işaretleyebili
 7. İsterse kişisel puanını verir. Kartta Puan kutusu görünür.
 
 Bu örneğin adımları zorunlu bir sıra değildir. Bağımsız durum davranışı
-ve puanlama, önceki bölümdeki önerilere dayanır.
+ve puanlama, önceki bölümdeki kurallara dayanır.
 
 ## İlk sürüm kararları
 
@@ -101,12 +116,12 @@ ve puanlama, önceki bölümdeki önerilere dayanır.
 | --- | --- | --- |
 | İşletim sistemi | macOS 26 ve sonrası | Kurulum ve paketleme macOS ile sınırlıdır. |
 | Masaüstü teknolojisi | Swift 6, SwiftUI, SwiftData ve Xcode 27 | Yerel macOS geliştirme ve dağıtım araçları |
-| Oyun ekleme | Elle ad girişi | İnternet ve dış servis gerekmez. |
+| Oyun ekleme | RAWG ücretsiz API'sinden içe aktarma, yedek olarak elle ad girişi | Katalog için internet ve API anahtarı gerekir; elle ekleme çevrimdışıdır. |
 | Veri saklama | Yerel, kalıcı SwiftData deposu | Çevrimdışı kullanım; bulut eşitlemesi yoktur. |
 | Puan ölçeği | 1–10 tam sayı, isteğe bağlı | Puan girişi doğrulanır. |
 | Durum ilişkileri | Bağımsız seçim | Otomatik durum değişikliği yoktur. |
 
-İlk plan Steam veya Epic bağlantısı, mağaza kataloğu, arkadaş sistemi, herkese
+İlk plan Steam veya Epic hesap bağlantısı, toplu katalog indirme, arkadaş sistemi, herkese
 açık profil, oyun başlatma ya da cihazlar arası eşitleme taahhüt etmez.
 Bunlar ayrıca istenirse kapsam ve veri kullanımı değerlendirilir.
 
@@ -115,7 +130,7 @@ Bunlar ayrıca istenirse kapsam ve veri kullanımı değerlendirilir.
 | Adım | Teslim edilecek sonuç | Tamamlanma ölçütü |
 | --- | --- | --- |
 | 1. Kararları netleştir | Hedef sistem, puan ölçeği, durum kuralları ve saklama kararı | Açık kararlar kaydedilmiş olur. |
-| 2. Oyun listesini hazırla | Oyun ekleme, dört sekme ve oyun kartları | Eklenen oyun doğru sekmelerde görünür. |
+| 2. Oyun listesini hazırla | API araması, seçilen oyunu içe aktarma, elle ekleme ve dört sekme | Her iki ekleme yolu aynı yerel listeyi besler; yeniden içe aktarma kayıt çoğaltmaz. |
 | 3. Durum ve puan düzenlemeyi ekle | Seçimleri yansıtan kutular ve kişisel puan | Değişiklikler bütün sekmelerde aynı kayda yansır. |
 | 4. Kalıcılığı ve hataları doğrula | Kapatıp açınca korunan kayıtlar, boş durum ve hata mesajları | Veri kaybı ve başarısız kayıt senaryoları kontrol edilir. |
 | 5. Masaüstü sürümünü hazırla | Seçilen sistemde kurulabilir uygulama | Kurulum ve aşağıdaki kabul senaryoları gerçek uygulamada geçer. |
@@ -141,10 +156,19 @@ geçtikleri iddia edilmez. Aşağıdaki kurallar ilk sürüm için kesinleştiri
 | K10 | Uygulamayı kapatıp yeniden aç. | Oyunlar, durumlar ve puanlar korunur. | İlk sürüm kararı |
 | K11 | Kaydetme başarısızlığını ve boş sekmeyi görüntüle. | Hata başarı gibi gösterilmez. Boş liste açıklanır. | İlk sürüm kararı |
 | K12 | Sekmeleri ve düzenleme kontrollerini klavyeyle kullan. | Odak görünür. İşlemler fare olmadan tamamlanır. | İlk sürüm kararı |
+| K13 | Katalogda ara, sonucu seç ve Ekle ile onayla. | Arama tek başına kayıt oluşturmaz. Onaylanan oyun başarılı yerel kayıt sonrası Tüm Oyunlar'da görünür; durumları ve kişisel puanı boştur. | İçe aktarma kararı |
+| K14 | Arama sonuçsuzken veya ağ kapalıyken Elle ekle'ye geç. | Aranan ad korunur; kullanıcı düzeltip onaylayınca tek kayıt oluşur. Boş ad reddedilir. | Yedek yol |
+| K15 | Anahtar yokken, 401, 403, 429, zaman aşımı ve sunucu hatasında ekleme akışını aç. | Hata veya kurulum gereği açıklanır, elle ekleme kullanılabilir; otomatik istek döngüsü ve yanlış başarı bildirimi yoktur. | API hataları |
+| K16 | Aynı RAWG kimliğini yeniden ekle; ayrıca aynı adlı elle kaydı olan bir sonuç seç. | Aynı dış kimlik mevcut kaydı açar ve kişisel verileri korur. Yalnızca ad eşleşmesi otomatik birleştirme yapmaz; ayrı kayıt için kullanıcı onayı gerekir. | Kayıt kimliği |
+| K17 | İçe aktarılan oyunu kaydet, interneti kapat ve uygulamayı yeniden aç. | Oyun ve kaynak bilgisi korunur. Durum, puan ve elle ekleme çevrimdışı kullanılabilir. | Yerel kalıcılık |
+| K18 | Eksik tarih/platform, boş API adı, geçersiz dış kimlik ve yerel kayıt hatasını dene. | İsteğe bağlı alanların eksikliği engel olmaz. Geçersiz zorunlu alanlar kaydedilmez; yerel kayıt hatası başarı göstermez ve yeniden denenebilir. | Veri doğrulama |
+| K19 | Arama, seçim, elle ekleme ve kaynak bağlantısını klavyeyle kullan. | Odak görünür; bütün akış erişilebilirdir. RAWG verisi gösterilen görünümlerde kaynak bağlantısı bulunur. | Erişilebilirlik ve atıf |
+| K20 | Anahtarı kaydet ve uygulamayı yeniden aç; saklama alanlarını, API isteklerini ve günlükleri incele. | Anahtar Keychain'den alınır; düz metin tercihlerde, SwiftData'da veya günlüklerde bulunmaz. Yerel koleksiyon, durumlar ve kişisel puanlar RAWG'ye gönderilmez. | Gizlilik |
 
 ## Görselin sınırları
 
-Görsel, 1280 × 720 boyutunda bir akış şeması ve örnek kartlardan oluşur.
+Görsel, 1280 × 720 boyutunda iki şemadan oluşur. İlk şema API'den içe aktarmayı
+ve elle ekleme yedek yolunu, ikincisi dört sekmeyi ve örnek kartları gösterir.
 Teknik olmayan okuyucular için hazırlanmıştır. Nihai ekran tasarımı veya
 çalışan uygulama değildir. Puan temsili, görseldeki oyunlar örnektir.
 
