@@ -6,7 +6,7 @@
 import SwiftData
 import SwiftUI
 
-private enum LibraryTab: CaseIterable, Hashable {
+enum LibraryTab: CaseIterable, Hashable {
     case allGames, library, wishlist, toPlay
 
     var title: String {
@@ -129,6 +129,10 @@ private struct GameListView: View {
                                 .buttonStyle(.plain)
                                 .accessibilityIdentifier("gameCard-\(game.title)")
                                 .accessibilityHint("Oyunun durumlarını ve puanını düzenlemek için açar.")
+                            if game.source == "rawg" {
+                                Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL))
+                                    .font(.caption)
+                            }
                         }
                     }
                     .padding()
@@ -201,11 +205,11 @@ private struct GameDetailSheet: View {
                     Text("Ad")
                 }
                 Section {
-                    statusToggle("Kütüphanem", value: $game.isInLibrary, target: .statusLibrary, identifier: "status-library")
-                    statusToggle("Wishlist", value: $game.isWishlisted, target: .statusWishlist, identifier: "status-wishlist")
-                    statusToggle("Oynanacak", value: $game.isToPlay, target: .statusToPlay, identifier: "status-to-play")
-                    statusToggle("Oynandı", value: $game.isPlayed, target: .statusPlayed, identifier: "status-played")
-                    statusToggle("Bitti", value: $game.isCompleted, target: .statusCompleted, identifier: "status-completed")
+                    statusToggle("Kütüphanem", keyPath: \Game.isInLibrary, target: .statusLibrary, identifier: "status-library")
+                    statusToggle("Wishlist", keyPath: \Game.isWishlisted, target: .statusWishlist, identifier: "status-wishlist")
+                    statusToggle("Oynanacak", keyPath: \Game.isToPlay, target: .statusToPlay, identifier: "status-to-play")
+                    statusToggle("Oynandı", keyPath: \Game.isPlayed, target: .statusPlayed, identifier: "status-played")
+                    statusToggle("Bitti", keyPath: \Game.isCompleted, target: .statusCompleted, identifier: "status-completed")
                 } header: {
                     Text("Durumlar")
                 } footer: {
@@ -253,16 +257,17 @@ private struct GameDetailSheet: View {
 
     private func statusToggle(
         _ title: String,
-        value: Binding<Bool>,
+        keyPath: ReferenceWritableKeyPath<Game, Bool>,
         target: LibraryFocusTarget,
         identifier: String
     ) -> some View {
         Toggle(title, isOn: Binding(
-            get: { value.wrappedValue },
+            get: { game[keyPath: keyPath] },
             set: { newValue in
-                let oldValue = value.wrappedValue
-                value.wrappedValue = newValue
-                save { value.wrappedValue = oldValue }
+                switch GameMutation.setStatus(game, keyPath: keyPath, value: newValue, save: persistEdit) {
+                case .applied: errorMessage = nil
+                case .rejected(let message), .saveFailed(let message): errorMessage = message
+                }
             }
         ))
         .focused($focus, equals: target)
@@ -270,7 +275,7 @@ private struct GameDetailSheet: View {
     }
 
     private func commitTitle() {
-        switch GameMutation.rename(game, rawTitle: titleDraft, save: modelContext.save) {
+        switch GameMutation.rename(game, rawTitle: titleDraft, save: persistEdit) {
         case .applied:
             errorMessage = nil
             titleDraft = game.title
@@ -280,7 +285,7 @@ private struct GameDetailSheet: View {
     }
 
     private func commitRating(_ raw: Int?) {
-        switch GameMutation.setRating(game, raw: raw, save: modelContext.save) {
+        switch GameMutation.setRating(game, raw: raw, save: persistEdit) {
         case .applied:
             errorMessage = nil
         case .rejected(let message), .saveFailed(let message):
@@ -288,14 +293,13 @@ private struct GameDetailSheet: View {
         }
     }
 
-    private func save(revert: () -> Void) {
-        do {
-            try modelContext.save()
-            errorMessage = nil
-        } catch {
-            revert()
-            errorMessage = GamePresentation.saveFailedMessage
+    private func persistEdit() throws {
+        #if DEBUG
+        if Game_libraryApp.usesTestStorage && ProcessInfo.processInfo.arguments.contains("--ui-testing-edit-save-failure") {
+            throw CocoaError(.fileWriteUnknown)
         }
+        #endif
+        try modelContext.save()
     }
 }
 

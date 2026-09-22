@@ -23,7 +23,17 @@ struct Game_libraryApp: App {
         let schema = Schema([
             Game.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: Game_libraryApp.usesTestStorage)
+        var modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: Game_libraryApp.usesTestStorage)
+        #if DEBUG
+        // Yalnızca UUID tabanlı geçici test deposu; kullanıcı deposuna yol kabul edilmez.
+        if Game_libraryApp.usesTestStorage,
+           let value = ProcessInfo.processInfo.environment["GAME_LIBRARY_TEST_STORE_ID"],
+           let identifier = UUID(uuidString: value) {
+            let url = FileManager.default.temporaryDirectory
+                .appendingPathComponent("game-library-ui-\(identifier.uuidString).store")
+            modelConfiguration = ModelConfiguration(schema: schema, url: url)
+        }
+        #endif
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])

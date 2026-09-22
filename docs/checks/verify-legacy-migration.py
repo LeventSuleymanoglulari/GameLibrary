@@ -51,7 +51,8 @@ AFTER = COMMON + r'''
         precondition(game.externalID == nil, "Dış kimlik boş değil")
         precondition(game.sourceURL == nil, "Kaynak bağlantısı boş değil")
         precondition(game.releaseDate == nil, "Çıkış tarihi boş değil")
-        print("PASS: Kalıcı kimlik, ad, tarih ve üç durum korundu; yeni kaynak alanları doğru.")
+        precondition(!game.isPlayed && !game.isCompleted && game.rating == nil, "Yeni kişisel alanlar boş değil")
+        print("PASS: Kalıcı kimlik, ad, tarih ve üç durum korundu; yeni kaynak ve kişisel alanlar doğru.")
     }
 }
 '''

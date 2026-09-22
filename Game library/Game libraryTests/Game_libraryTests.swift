@@ -212,6 +212,7 @@ import Synchronization
     }
 
     func testTransportParametersAndErrorClassification() async throws {
+        defer { CatalogURLProtocol.errorCode = nil; CatalogURLProtocol.body = #"{"next":null,"results":[]}"# }
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [CatalogURLProtocol.self]
         let service = RAWGService(session: URLSession(configuration: configuration))
@@ -222,6 +223,10 @@ import Synchronization
         XCTAssertEqual(items?.first { $0.name == "search" }?.value, "A & B")
         XCTAssertEqual(items?.first { $0.name == "page" }?.value, "2")
         XCTAssertEqual(items?.first { $0.name == "page_size" }?.value, "20")
+        XCTAssertEqual(Set(items?.map(\.name) ?? []), Set(["search", "page", "page_size", "key"]))
+        XCTAssertEqual(CatalogURLProtocol.request?.httpMethod, "GET")
+        XCTAssertNil(CatalogURLProtocol.request?.httpBody)
+        XCTAssertNil(CatalogURLProtocol.request?.httpBodyStream)
         for status in [401, 403, 429, 500] {
             CatalogURLProtocol.status = status
             do {
@@ -236,11 +241,41 @@ import Synchronization
         }
         do { _ = try await service.search(query: "Portal", page: 1, apiKey: " "); XCTFail() }
         catch RAWGServiceError.missingKey { }
+        CatalogURLProtocol.status = 200
+        for code in [URLError.Code.timedOut, .notConnectedToInternet, .cannotFindHost] {
+            CatalogURLProtocol.errorCode = code
+            do {
+                _ = try await service.search(query: "Portal", page: 1, apiKey: "secret-test-key")
+                XCTFail("Expected network error")
+            } catch let error as RAWGServiceError {
+                XCTAssertFalse(String(describing: error).contains("secret-test-key"))
+                XCTAssertFalse(error.localizedDescription.contains("secret-test-key"))
+                switch (code, error) {
+                case (.timedOut, .timedOut), (.notConnectedToInternet, .offline), (.cannotFindHost, .offline): break
+                default: XCTFail("Incorrect network classification")
+                }
+            }
+        }
+        CatalogURLProtocol.errorCode = nil
+        for body in ["not-json", #"{"results":[{"id":42}]}"#, #"{"results":[{"id":0,"name":"Invalid"}]}"#] {
+            CatalogURLProtocol.body = body
+            do { _ = try await service.search(query: "Portal", page: 1, apiKey: "fixture"); XCTFail() }
+            catch RAWGServiceError.invalidResponse { }
+        }
     }
 }
 
 private final class CatalogURLProtocol: URLProtocol, @unchecked Sendable {
-    private static let state = Mutex((status: 200, requestURL: URL?.none))
+    private static let state = Mutex((status: 200, requestURL: URL?.none, request: URLRequest?.none, errorCode: URLError.Code?.none, body: #"{"next":null,"results":[]}"#))
+    static var request: URLRequest? { state.withLock { $0.request } }
+    static var errorCode: URLError.Code? {
+        get { state.withLock { $0.errorCode } }
+        set { state.withLock { $0.errorCode = newValue } }
+    }
+    static var body: String {
+        get { state.withLock { $0.body } }
+        set { state.withLock { $0.body = newValue } }
+    }
     static var status: Int {
         get { state.withLock { $0.status } }
         set { state.withLock { $0.status = newValue } }
@@ -253,9 +288,14 @@ private final class CatalogURLProtocol: URLProtocol, @unchecked Sendable {
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() {
         Self.requestURL = request.url
+        Self.state.withLock { $0.request = request }
+        if let code = Self.errorCode {
+            client?.urlProtocol(self, didFailWithError: URLError(code, userInfo: [NSURLErrorFailingURLErrorKey: request.url!]))
+            return
+        }
         let response = HTTPURLResponse(url: request.url!, statusCode: Self.status, httpVersion: nil, headerFields: nil)!
         client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
-        client?.urlProtocol(self, didLoad: Data(#"{"next":null,"results":[]}"#.utf8))
+        client?.urlProtocol(self, didLoad: Data(Self.body.utf8))
         client?.urlProtocolDidFinishLoading(self)
     }
     override func stopLoading() { }
