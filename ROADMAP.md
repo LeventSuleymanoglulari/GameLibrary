@@ -91,7 +91,7 @@ açılış ve başarısız kayıt senaryolarının sonuçları kaydedilir. K17�
 
 ## 5. İlk masaüstü sürümünü hazırla
 
-Ön koşul: 4. aşamadaki kalıcılık ve hata kontrollerinin geçmesi.
+Ön koşul: 6. aşamadaki otomatik katalog içe aktarmanın tamamlanması.
 
 - [ ] Uygulamayı seçilen işletim sistemi için kurulabilir paket haline getir.
 - [ ] Paketleme, kurulum ve çalıştırma adımlarını README'de belgele.
@@ -104,9 +104,26 @@ açılış ve başarısız kayıt senaryolarının sonuçları kaydedilir. K17�
 **Tamamlanma ölçütü:** Uygulama hedef sistemde kurulup açılır; kabul
 senaryoları geçer ve ilk sürümün kullanım adımları belgelenmiştir.
 
+## 6. Otomatik katalog içe aktarma
+
+Ön koşul: 4. aşamadaki kalıcılık ve hata kontrollerinin geçmesi. Bu aşama ilk
+sürüme dahildir; 5. aşamadaki kurulabilir paket bu aşama bitmeden tamamlanmış
+sayılmaz.
+
+- [ ] Kullanıcının başlattığı tek komutla RAWG kataloğunu sayfa sayfa yerel kütüphaneye aktar; her oyun için ayrı seçim onayı isteme.
+- [ ] Aktarılan oyunları Tüm Oyunlar'da göster. Kişisel durum ve puan boş kalsın; API'nin topluluk puanı bu alanları doldurmasın.
+- [ ] Aynı RAWG kimliğini yeniden aktarırken kayıt çoğaltma; mevcut durum ve puanı koru. Elle eklenen kayıtları otomatik birleştirme.
+- [ ] Ücretsiz plan kotasında, ağ hatasında veya anahtar hatasında aktarımı durdur. Otomatik istek döngüsü başlatma. Kaldığı sayfadan sürdürmeyi sağla.
+- [ ] Aktarılan her kayıtta RAWG kaynak bağlantısı bulunsun. Anahtar ve kişisel veriler isteklerde ve günlüklerde yer almasın.
+- [ ] Elle eklemeyi bu aşamada da kullanılabilir tut.
+
+**Tamamlanma ölçütü:** Kullanıcı komutuyla katalog oyunları yerel listeye geçer
+ve Tüm Oyunlar'da görünür. Kota veya bağlantı kesilince aktarım durur ve
+sürdürülebilir. K16'daki kimlik kuralları toplu aktarımda da geçer.
+
 ## İlk sürüm dışında
 
-Steam/Epic hesap bağlantısı, toplu katalog indirme, arkadaş sistemi, herkese açık profil,
+Steam/Epic hesap bağlantısı, arkadaş sistemi, herkese açık profil,
 oyun başlatma ve cihazlar arası eşitleme mevcut kapsamda taahhüt edilmez.
 Ayrıca istenirse kapsam ve veri kullanımı değerlendirilir.
 
