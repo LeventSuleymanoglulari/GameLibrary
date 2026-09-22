@@ -125,14 +125,26 @@ private struct GameListView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         ForEach(games) { game in
-                            Button { onOpen(game) } label: { GameCard(game: game) }
+                            VStack(alignment: .leading, spacing: 6) {
+                                Button { onOpen(game) } label: {
+                                    GameCard(game: game)
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(.horizontal)
+                                        .padding(.top)
+                                        .padding(.bottom, game.source == "rawg" ? 0 : 16)
+                                }
                                 .buttonStyle(.plain)
                                 .accessibilityIdentifier("gameCard-\(game.title)")
                                 .accessibilityHint("Oyunun durumlarını ve puanını düzenlemek için açar.")
-                            if game.source == "rawg" {
-                                Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL))
-                                    .font(.caption)
+                                if game.source == "rawg" {
+                                    Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL))
+                                        .font(.caption)
+                                        .padding(.horizontal)
+                                        .padding(.bottom)
+                                }
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
                         }
                     }
                     .padding()
@@ -170,9 +182,6 @@ private struct GameCard: View {
                 Text("RAWG kataloğundan eklendi").font(.subheadline).foregroundStyle(.secondary)
             }
         }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(game.title)
         .accessibilityValue(GamePresentation.accessibilityValue(for: game))
