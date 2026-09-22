@@ -27,6 +27,15 @@ enum LibraryTab: CaseIterable, Hashable {
         }
     }
 
+    var shortcut: KeyEquivalent {
+        switch self {
+        case .allGames: "1"
+        case .library: "2"
+        case .wishlist: "3"
+        case .toPlay: "4"
+        }
+    }
+
     func includes(_ game: Game) -> Bool {
         switch self {
         case .allGames: true
@@ -37,149 +46,330 @@ enum LibraryTab: CaseIterable, Hashable {
     }
 }
 
+private enum LibraryPane: Equatable {
+    case browsing
+    case inspecting
+    case composing
+}
+
+private struct ShelfInk {
+    let scheme: ColorScheme
+
+    var canvas: Color {
+        scheme == .dark
+            ? Color(red: 0.11, green: 0.10, blue: 0.09)
+            : Color(red: 0.94, green: 0.91, blue: 0.86)
+    }
+
+    var rail: Color {
+        scheme == .dark
+            ? Color(red: 0.15, green: 0.13, blue: 0.11)
+            : Color(red: 0.89, green: 0.84, blue: 0.76)
+    }
+
+    var spine: Color {
+        scheme == .dark
+            ? Color(red: 0.20, green: 0.17, blue: 0.15)
+            : Color(red: 0.98, green: 0.96, blue: 0.93)
+    }
+
+    var pane: Color {
+        scheme == .dark
+            ? Color(red: 0.16, green: 0.14, blue: 0.12)
+            : Color(red: 0.97, green: 0.94, blue: 0.89)
+    }
+
+    var ink: Color {
+        scheme == .dark
+            ? Color(red: 0.96, green: 0.93, blue: 0.88)
+            : Color(red: 0.18, green: 0.14, blue: 0.11)
+    }
+
+    var secondary: Color {
+        scheme == .dark
+            ? Color(red: 0.78, green: 0.72, blue: 0.64)
+            : Color(red: 0.38, green: 0.32, blue: 0.26)
+    }
+
+    var lamp: Color { Color(red: 0.86, green: 0.55, blue: 0.22) }
+
+    var hairline: Color { ink.opacity(0.14) }
+}
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.colorScheme) private var colorScheme
     @Query(sort: \Game.addedDate, order: .reverse) private var games: [Game]
     @State private var selectedTab: LibraryTab = .allGames
-    @State private var isShowingAddGame = false
+    @State private var pane: LibraryPane = .browsing
     @State private var selectedGame: Game?
-    @State private var pendingGame: Game?
+
+    private var ink: ShelfInk { ShelfInk(scheme: colorScheme) }
+
+    private var motion: Animation {
+        reduceMotion
+            ? .easeOut(duration: 0.12)
+            : .timingCurve(0.16, 1, 0.3, 1, duration: 0.28)
+    }
+
+    private var visibleGames: [Game] {
+        games.filter(selectedTab.includes)
+    }
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            ForEach(LibraryTab.allCases, id: \.self) { tab in
-                GameListView(games: games.filter(tab.includes), tab: tab) { game in
-                    selectedGame = game
-                }
-                    .tabItem { Label(tab.title, systemImage: tab.iconName) }
-                    .tag(tab)
-            }
+        HStack(spacing: 0) {
+            filterRail
+            Rectangle().fill(ink.hairline).frame(width: 1)
+            shelf
+            Rectangle().fill(ink.hairline).frame(width: 1)
+            trailingPane
+                .frame(width: 400)
         }
-        .frame(minWidth: 620, minHeight: 420)
+        .foregroundStyle(ink.ink)
+        .background(ink.canvas)
+        .tint(ink.lamp)
+        .frame(minWidth: 980, minHeight: 640)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button { isShowingAddGame = true } label: {
+            Button {
+                withAnimation(motion) {
+                    if pane == .composing {
+                        closeComposer()
+                    } else {
+                        pane = .composing
+                    }
+                }
+            } label: {
                     Label("Oyun Ekle", systemImage: "plus")
                 }
                 .accessibilityHint("RAWG kataloğunda arama veya elle oyun ekleme akışını açar.")
             }
-            ToolbarItemGroup(placement: .automatic) {
-                libraryTabShortcutButtons
-            }
-        }
-        .sheet(isPresented: $isShowingAddGame, onDismiss: {
-            selectedGame = pendingGame
-            pendingGame = nil
-        }) {
-            AddGameSheet { game in
-                selectedTab = .allGames
-                pendingGame = game
-            }
-        }
-        .sheet(item: $selectedGame) { game in
-            GameDetailSheet(game: game)
         }
     }
 
-    @ViewBuilder
-    private var libraryTabShortcutButtons: some View {
-        Button("Tüm Oyunlar") { selectedTab = .allGames }
-            .keyboardShortcut("1", modifiers: .command)
-            .opacity(0)
-            .frame(width: 0, height: 0)
-            .accessibilityHidden(true)
-        Button("Kütüphanem") { selectedTab = .library }
-            .keyboardShortcut("2", modifiers: .command)
-            .opacity(0)
-            .frame(width: 0, height: 0)
-            .accessibilityHidden(true)
-        Button("Wishlist") { selectedTab = .wishlist }
-            .keyboardShortcut("3", modifiers: .command)
-            .opacity(0)
-            .frame(width: 0, height: 0)
-            .accessibilityHidden(true)
-        Button("Oynanacak") { selectedTab = .toPlay }
-            .keyboardShortcut("4", modifiers: .command)
-            .opacity(0)
-            .frame(width: 0, height: 0)
-            .accessibilityHidden(true)
+    private var filterRail: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Oyun Kütüphanesi")
+                .font(.title3.weight(.semibold))
+                .padding(.horizontal, 8)
+            VStack(spacing: 4) {
+                ForEach(LibraryTab.allCases, id: \.self) { tab in
+                    filterButton(tab)
+                }
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(16)
+        .frame(width: 220, alignment: .topLeading)
+        .background(ink.rail)
     }
-}
 
-private struct GameListView: View {
-    let games: [Game]
-    let tab: LibraryTab
-    let onOpen: (Game) -> Void
+    private func filterButton(_ tab: LibraryTab) -> some View {
+        let count = games.filter(tab.includes).count
+        let selected = selectedTab == tab
+        return Button {
+            withAnimation(motion) { selectedTab = tab }
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: tab.iconName)
+                    .frame(width: 18)
+                Text(tab.title)
+                    .font(.body.weight(selected ? .semibold : .regular))
+                Spacer(minLength: 0)
+                Text("\(count)")
+                    .font(.callout.monospacedDigit())
+                    .foregroundStyle(ink.secondary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity, minHeight: 36, alignment: .leading)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(selected ? ink.lamp.opacity(0.28) : ink.rail)
+            )
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .keyboardShortcut(tab.shortcut, modifiers: .command)
+        .accessibilityIdentifier(tab.title)
+        .accessibilityLabel(tab.title)
+        .accessibilityValue("\(count)")
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
 
-    var body: some View {
-        Group {
-            if games.isEmpty {
+    private var shelf: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(alignment: .firstTextBaseline) {
+                Text(selectedTab.title)
+                    .font(.title.weight(.semibold))
+                Spacer()
+                Text(visibleGames.isEmpty ? "0 oyun" : "\(visibleGames.count) oyun")
+                    .font(.callout.monospacedDigit())
+                    .foregroundStyle(ink.secondary)
+            }
+            .padding(.horizontal, 20)
+            .padding(.top, 18)
+            .padding(.bottom, 12)
+
+            if visibleGames.isEmpty {
                 ContentUnavailableView(
-                    tab == .allGames ? "Henüz oyun yok" : "Bu sekmede oyun yok",
+                    selectedTab == .allGames ? "Henüz oyun yok" : "Bu sekmede oyun yok",
                     systemImage: "gamecontroller",
-                    description: Text(tab == .allGames
+                    description: Text(selectedTab == .allGames
                         ? "Başlamak için araç çubuğundan Oyun Ekle'yi seçin."
                         : GamePresentation.emptyFilteredTabDescription)
                 )
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 12) {
-                        ForEach(games) { game in
-                            VStack(alignment: .leading, spacing: 6) {
-                                Button { onOpen(game) } label: {
-                                    GameCard(game: game)
-                                        .frame(maxWidth: .infinity, alignment: .leading)
-                                        .padding(.horizontal)
-                                        .padding(.top)
-                                        .padding(.bottom, game.source == "rawg" ? 0 : 16)
-                                }
-                                .buttonStyle(.plain)
-                                .accessibilityIdentifier("gameCard-\(game.title)")
-                                .accessibilityHint("Oyunun durumlarını ve puanını düzenlemek için açar.")
-                                if game.source == "rawg" {
-                                    Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL))
-                                        .font(.caption)
-                                        .padding(.horizontal)
-                                        .padding(.bottom)
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
+                    LazyVStack(spacing: 8) {
+                        ForEach(visibleGames) { game in
+                            shelfRow(game)
                         }
                     }
-                    .padding()
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 20)
                 }
             }
         }
-        .navigationTitle(tab.title)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func shelfRow(_ game: Game) -> some View {
+        let selected = selectedGame?.persistentModelID == game.persistentModelID && pane == .inspecting
+        return VStack(alignment: .leading, spacing: 6) {
+            Button {
+                withAnimation(motion) {
+                    selectedGame = game
+                    pane = .inspecting
+                }
+            } label: {
+                GameCard(game: game, ink: ink, emphasized: selected)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(14)
+                    .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("gameCard-\(game.title)")
+            .accessibilityValue(GamePresentation.accessibilityValue(for: game))
+            .accessibilityHint("Oyunun durumlarını ve puanını düzenlemek için açar.")
+            if game.source == "rawg" {
+                Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL))
+                    .font(.caption)
+                    .padding(.horizontal, 14)
+                    .padding(.bottom, 12)
+            }
+        }
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(selected ? ink.spine : Color.clear)
+        )
+        .overlay(alignment: .bottom) {
+            if !selected {
+                Rectangle().fill(ink.hairline).frame(height: 1).padding(.horizontal, 14)
+            }
+        }
+        .shadow(color: .black.opacity(selected ? 0.14 : 0), radius: 12, x: 0, y: 4)
+        .animation(motion, value: GamePresentation.accessibilityValue(for: game))
+    }
+
+    private var trailingPane: some View {
+        ZStack {
+            ink.pane
+            Group {
+                if pane == .composing {
+                    AddGameSheet(
+                        onOpen: { game in
+                            withAnimation(motion) {
+                                selectedTab = .allGames
+                                selectedGame = game
+                                pane = .inspecting
+                            }
+                        },
+                        onClose: closeComposer
+                    )
+                } else if pane == .inspecting, let selectedGame {
+                    GameDetailSheet(game: selectedGame, onClose: closeDetail)
+                        .id(selectedGame.persistentModelID)
+                } else {
+                    emptyPane
+                }
+            }
+            .id(pane)
+            .transition(.asymmetric(
+                insertion: .opacity.combined(with: .offset(x: reduceMotion ? 0 : 14)),
+                removal: .opacity
+            ))
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+        }
+        .clipped()
+        .shadow(color: .black.opacity(0.12), radius: 16, x: -6, y: 0)
+    }
+
+    private var emptyPane: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Bir oyun seçin")
+                .font(.title2.weight(.semibold))
+            Text("Raftan bir oyun seçin. Durum ve puan bu panele gelir. Eklemek için Oyun Ekle.")
+                .font(.body)
+                .foregroundStyle(ink.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+    }
+
+    private func closeComposer() {
+        withAnimation(motion) {
+            pane = selectedGame == nil ? .browsing : .inspecting
+        }
+    }
+
+    private func closeDetail() {
+        withAnimation(motion) {
+            selectedGame = nil
+            pane = .browsing
+        }
     }
 }
 
 private struct GameCard: View {
     let game: Game
+    let ink: ShelfInk
+    var emphasized: Bool = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(game.title).font(.headline)
+        VStack(alignment: .leading, spacing: 8) {
+            Text(game.title)
+                .font(.headline)
+                .foregroundStyle(emphasized ? ink.lamp : ink.ink)
+                .multilineTextAlignment(.leading)
             let labels = GamePresentation.statusLabels(for: game)
             if !labels.isEmpty || game.rating != nil {
                 HStack(spacing: 6) {
                     ForEach(labels, id: \.self) { label in
                         Text(label)
                             .font(.caption.weight(.medium))
-                            .padding(.horizontal, 8).padding(.vertical, 4)
-                            .background(.tint.opacity(0.14), in: Capsule())
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .foregroundStyle(ink.ink)
+                            .background(ink.lamp.opacity(0.18), in: Capsule())
                     }
                     if let chip = GamePresentation.ratingChip(game.rating) {
                         Text(chip)
                             .font(.caption.weight(.medium))
-                            .padding(.horizontal, 8).padding(.vertical, 4)
-                            .background(.orange.opacity(0.16), in: Capsule())
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .foregroundStyle(ink.ink)
+                            .background(ink.lamp.opacity(0.32), in: Capsule())
                     }
                 }
             }
             if game.source == "rawg" {
-                Text("RAWG kataloğundan eklendi").font(.subheadline).foregroundStyle(.secondary)
+                Text("RAWG kataloğundan eklendi")
+                    .font(.subheadline)
+                    .foregroundStyle(ink.secondary)
             }
         }
         .accessibilityElement(children: .ignore)
@@ -189,42 +379,63 @@ private struct GameCard: View {
 }
 
 private struct GameDetailSheet: View {
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) private var colorScheme
     @Bindable var game: Game
+    let onClose: () -> Void
     @State private var titleDraft: String
     @State private var errorMessage: String?
     @FocusState private var focus: LibraryFocusTarget?
 
-    init(game: Game) {
+    private var ink: ShelfInk { ShelfInk(scheme: colorScheme) }
+
+    init(game: Game, onClose: @escaping () -> Void) {
         self.game = game
+        self.onClose = onClose
         _titleDraft = State(initialValue: game.title)
     }
 
     var body: some View {
-        NavigationStack {
-            Form {
-                Section {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(game.title)
+                        .font(.title2.weight(.semibold))
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 8)
+                    Button(GamePresentation.detailDismissTitle, action: onClose)
+                        .accessibilityIdentifier(GamePresentation.detailDismissIdentifier)
+                        .focused($focus, equals: .dismissDetail)
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Ad")
+                        .font(.headline)
                     TextField("Oyun adı", text: $titleDraft)
+                        .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("detailTitle")
                         .focused($focus, equals: .detailTitle)
                         .onSubmit { commitTitle() }
                     Button("Adı Kaydet") { commitTitle() }
-                } header: {
-                    Text("Ad")
                 }
-                Section {
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Durumlar")
+                        .font(.headline)
                     statusToggle("Kütüphanem", keyPath: \Game.isInLibrary, target: .statusLibrary, identifier: "status-library")
                     statusToggle("Wishlist", keyPath: \Game.isWishlisted, target: .statusWishlist, identifier: "status-wishlist")
                     statusToggle("Oynanacak", keyPath: \Game.isToPlay, target: .statusToPlay, identifier: "status-to-play")
                     statusToggle("Oynandı", keyPath: \Game.isPlayed, target: .statusPlayed, identifier: "status-played")
                     statusToggle("Bitti", keyPath: \Game.isCompleted, target: .statusCompleted, identifier: "status-completed")
-                } header: {
-                    Text("Durumlar")
-                } footer: {
                     Text("Durumlar birbirinden bağımsızdır; birini değiştirmek diğerini değiştirmez.")
+                        .font(.footnote)
+                        .foregroundStyle(ink.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
-                Section {
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Kişisel puan")
+                        .font(.headline)
                     Menu {
                         Button("Puanı kaldır") { commitRating(nil) }
                         Divider()
@@ -237,30 +448,34 @@ private struct GameDetailSheet: View {
                     .focused($focus, equals: .ratingMenu)
                     .accessibilityLabel("Kişisel puan")
                     .accessibilityValue(GamePresentation.ratingLabel(game.rating))
-                } header: {
-                    Text("Kişisel puan")
                 }
-                if let releaseDate = game.releaseDate {
-                    Section {
-                        Text("Çıkış: \(releaseDate)")
-                    } header: {
+
+                if game.releaseDate != nil || !game.platforms.isEmpty || game.source == "rawg" {
+                    VStack(alignment: .leading, spacing: 6) {
                         Text("Katalog bilgisi")
+                            .font(.headline)
+                        if let releaseDate = game.releaseDate {
+                            Text("Çıkış: \(releaseDate)")
+                        }
+                        if !game.platforms.isEmpty {
+                            Text(game.platforms.joined(separator: ", "))
+                                .foregroundStyle(ink.secondary)
+                        }
+                        if game.source == "rawg" {
+                            Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL))
+                        }
                     }
                 }
-                if !game.platforms.isEmpty { Text(game.platforms.joined(separator: ", ")) }
-                if game.source == "rawg" { Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL)) }
-                if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
-            }
-            .navigationTitle(game.title)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(GamePresentation.detailDismissTitle) { dismiss() }
-                        .accessibilityIdentifier(GamePresentation.detailDismissIdentifier)
-                        .focused($focus, equals: .dismissDetail)
+
+                if let errorMessage {
+                    Text(errorMessage)
+                        .foregroundStyle(Color(red: 0.72, green: 0.22, blue: 0.16))
+                        .fixedSize(horizontal: false, vertical: true)
                 }
             }
+            .padding(22)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(minWidth: 440, minHeight: 400)
         .defaultFocus($focus, .detailTitle)
     }
 
@@ -314,8 +529,9 @@ private struct GameDetailSheet: View {
 
 private struct AddGameSheet: View {
     let onOpen: (Game) -> Void
+    let onClose: () -> Void
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
     @State private var search = CatalogSearchSession()
     @State private var searchText = ""
     @State private var manualTitle = ""
@@ -329,26 +545,42 @@ private struct AddGameSheet: View {
     @State private var requestTask: Task<Void, Never>?
     @FocusState private var focus: LibraryFocusTarget?
 
+    private var ink: ShelfInk { ShelfInk(scheme: colorScheme) }
+
     var body: some View {
-        NavigationStack {
-            Form {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 18) {
+                HStack {
+                    Text("Oyun Ekle")
+                        .font(.title2.weight(.semibold))
+                    Spacer()
+                    Button("Gizle", action: onClose)
+                }
+
                 if !manualEntryOnly {
-                    Section("RAWG kataloğunda ara") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("RAWG kataloğunda ara")
+                            .font(.headline)
                         TextField("Aranacak oyun adı", text: $searchText)
+                            .textFieldStyle(.roundedBorder)
                             .accessibilityIdentifier("searchTitle")
                             .onSubmit { startSearch() }
                         HStack {
                             Button("Ara") { startSearch() }
                                 .disabled(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || search.isSearching)
+                                .buttonStyle(.borderedProminent)
                             Button("API Anahtarını Ayarla") { isShowingKeyEditor = true }
                             Link("RAWG kaynağı", destination: RAWGService.attributionURL)
                         }
                         if apiKey.isEmpty {
                             Text("Katalog araması için RAWG API anahtarınızı ayarlayın. Elle ekleme her zaman kullanılabilir.")
+                                .font(.footnote)
+                                .foregroundStyle(ink.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                         if search.isSearching { ProgressView("RAWG aranıyor…") }
                         if let message = search.errorMessage {
-                            Text(message).foregroundStyle(.red)
+                            Text(message).foregroundStyle(Color(red: 0.72, green: 0.22, blue: 0.16))
                             Button("Tekrar dene") { requestTask = Task { await search.retry(apiKey: apiKey) } }
                                 .disabled(search.isSearching)
                         }
@@ -356,31 +588,33 @@ private struct AddGameSheet: View {
                             Text("Sonuç bulunamadı. Aradığınız adla elle ekleyebilirsiniz.")
                         }
                         if !search.results.isEmpty {
-                            ScrollView {
-                                LazyVStack(alignment: .leading, spacing: 12) {
-                                    ForEach(search.results) { result in
-                                        HStack(alignment: .top) {
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text(result.name).font(.headline)
-                                                if let released = result.released { Text("Çıkış: \(released)").font(.caption) }
-                                                if !result.platformNames.isEmpty {
-                                                    Text(result.platformNames.joined(separator: ", ")).font(.caption)
-                                                }
-                                                Link("RAWG kaynağı", destination: result.sourceURL).font(.caption)
+                            VStack(alignment: .leading, spacing: 10) {
+                                ForEach(search.results) { result in
+                                    HStack(alignment: .top, spacing: 12) {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(result.name).font(.headline)
+                                            if let released = result.released { Text("Çıkış: \(released)").font(.caption) }
+                                            if !result.platformNames.isEmpty {
+                                                Text(result.platformNames.joined(separator: ", ")).font(.caption).foregroundStyle(ink.secondary)
                                             }
-                                            Spacer()
-                                            Button(selectedResult?.id == result.id ? "Seçildi" : "Seç") { selectedResult = result }
+                                            Link("RAWG kaynağı", destination: result.sourceURL).font(.caption)
                                         }
+                                        Spacer(minLength: 8)
+                                        Button(selectedResult?.id == result.id ? "Seçildi" : "Seç") { selectedResult = result }
+                                    }
+                                    .padding(.vertical, 8)
+                                    .overlay(alignment: .bottom) {
+                                        Rectangle().fill(ink.hairline).frame(height: 1)
                                     }
                                 }
                             }
-                            .frame(height: 180)
                         }
                         if let selectedResult {
                             Button("Seçilen Oyunu Ekle") {
                                 do { try add(GameDraft.rawg(selectedResult)) }
                                 catch { errorMessage = "Yerel kayıt tamamlanamadı. Seçiminiz korunuyor; tekrar deneyebilirsiniz." }
                             }
+                            .buttonStyle(.borderedProminent)
                         }
                         if search.hasNextPage {
                             Button("Sonraki 20 sonucu yükle") { requestTask = Task { await search.loadNext(apiKey: apiKey) } }
@@ -388,8 +622,12 @@ private struct AddGameSheet: View {
                         }
                     }
                 }
-                Section("Elle ekle") {
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Elle ekle")
+                        .font(.headline)
                     TextField("Oyun adı", text: $manualTitle)
+                        .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("manualTitle")
                         .focused($focus, equals: .addManualTitle)
                     Button("Elle Ekle") {
@@ -401,15 +639,29 @@ private struct AddGameSheet: View {
                             errorMessage = message
                         }
                     }
+                    .buttonStyle(.borderedProminent)
                     .focused($focus, equals: .addManualSubmit)
-                    Text("Elle ekleme çevrimdışı da çalışır.").font(.footnote)
+                    Text("Elle ekleme çevrimdışı da çalışır.")
+                        .font(.footnote)
+                        .foregroundStyle(ink.secondary)
+                    Button(manualEntryOnly ? "Katalogda ara" : "Yalnızca elle ekle") {
+                        manualEntryOnly.toggle()
+                    }
                 }
-                if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
+
+                if let errorMessage {
+                    Text(errorMessage)
+                        .foregroundStyle(Color(red: 0.72, green: 0.22, blue: 0.16))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
                 if let pendingDraft {
-                    Section("Aynı adlı oyun zaten var") {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Aynı adlı oyun zaten var")
+                            .font(.headline)
                         Text("Mevcut kaydı açın veya bunun ayrı bir oyun olduğunu onaylayın.")
+                            .foregroundStyle(ink.secondary)
                         ForEach(nameMatches) { game in
-                            Button("Mevcut kaydı aç: \(game.title)") { onOpen(game); dismiss() }
+                            Button("Mevcut kaydı aç: \(game.title)") { onOpen(game) }
                         }
                         Button("Ayrı Oyun Olarak Ekle") {
                             do { try add(pendingDraft, confirmed: true) }
@@ -419,17 +671,12 @@ private struct AddGameSheet: View {
                     }
                 }
             }
-            .formStyle(.grouped)
-            .navigationTitle("Oyun Ekle")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Kapat") { dismiss() } }
-                ToolbarItem(placement: .primaryAction) {
-                    Button(manualEntryOnly ? "Katalogda ara" : "Elle ekle") { manualEntryOnly.toggle() }
-                }
-            }
-            .sheet(isPresented: $isShowingKeyEditor) { APIKeySheet { apiKey = $0 } }
+            .padding(22)
+            .frame(maxWidth: .infinity, alignment: .leading)
         }
-        .frame(minWidth: 560, minHeight: 520)
+        .popover(isPresented: $isShowingKeyEditor) {
+            APIKeySheet { apiKey = $0 }
+        }
         .task {
             do { apiKey = try KeychainStore.loadRAWGKey() ?? "" }
             catch { errorMessage = "Kaydedilmiş API anahtarı okunamadı. Elle ekleme kullanılabilir." }
@@ -460,7 +707,6 @@ private struct AddGameSheet: View {
         switch try Game.add(draft, to: modelContext, allowSameName: confirmed, save: failingSave) {
         case .added(let game), .existing(let game):
             onOpen(game)
-            dismiss()
         case .sameName(let games):
             pendingDraft = draft
             nameMatches = games
@@ -475,23 +721,26 @@ private struct APIKeySheet: View {
     @State private var errorMessage: String?
 
     var body: some View {
-        NavigationStack {
-            Form {
-                SecureField("RAWG API anahtarı", text: $key)
-                Text("Anahtar yalnızca bu Mac'in Keychain'inde saklanır; oyun kayıtlarına veya günlük kaydına yazılmaz.")
-                    .font(.footnote).foregroundStyle(.secondary)
-                if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
-            }
-            .navigationTitle("RAWG API Anahtarı")
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Vazgeç") { dismiss() } }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Kaydet") { save() }
-                        .disabled(key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                }
+        VStack(alignment: .leading, spacing: 12) {
+            Text("RAWG API Anahtarı")
+                .font(.headline)
+            SecureField("RAWG API anahtarı", text: $key)
+                .textFieldStyle(.roundedBorder)
+            Text("Anahtar yalnızca bu Mac'in Keychain'inde saklanır; oyun kayıtlarına veya günlük kaydına yazılmaz.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+            if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
+            HStack {
+                Button("Vazgeç") { dismiss() }
+                Spacer()
+                Button("Kaydet") { save() }
+                    .disabled(key.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .buttonStyle(.borderedProminent)
             }
         }
-        .frame(minWidth: 440, minHeight: 190)
+        .padding(16)
+        .frame(width: 360)
     }
 
     private func save() {
