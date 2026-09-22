@@ -36,6 +36,19 @@ Tüm testleri, native arayüz kontrolleriyle birlikte çalıştırmak için ayn�
 komuttan `-only-testing` seçeneğini kaldırın. Arayüz testleri açık bir macOS
 oturumu gerektirir.
 
+Eski SwiftData şemasından veri geçişini ve Keychain'in süreçler arası
+kalıcılığını ayrı ayrı doğrulamak için:
+
+```sh
+python3 docs/checks/verify-legacy-migration.py
+python3 docs/checks/verify-keychain-relaunch.py
+```
+
+Kontroller gerçek koleksiyona veya RAWG anahtarına dokunmaz: bellek/geçici
+SwiftData depoları, yerel katalog yanıtları ve ayrı bir Keychain hizmetindeki
+sentetik anahtar kullanılır. Keychain kontrolü sonunda test anahtarını siler.
+Arayüzde yeniden açılış testi UUID ile ayrılmış geçici bir disk deposu kullanır.
+
 ## Oyun ekle
 
 1. Araç çubuğundan **Oyun Ekle**'yi açın. Katalog kullanmak için kendi RAWG
@@ -98,3 +111,9 @@ taslaktır; çalışan uygulama değildir.
 
 2. aşamanın doğrulama sonuçları ve sınırları
 [doğrulama kaydında](docs/asama-2-dogrulama.md) bulunur.
+
+4. aşamadaki kalıcılık, başarısız kayıt, çevrimdışı kullanım ve gizlilik
+kontrollerinin kapsamı [4. aşama doğrulama kaydında](docs/asama-4-dogrulama.md)
+yer alır. Başarısız düzenlemede ilgili alan eski değerine döner ve hata
+gösterilir; diğer bekleyen değişiklikler silinmez. Ağ ve zaman aşımı hataları
+elle eklemeyi engellemez.

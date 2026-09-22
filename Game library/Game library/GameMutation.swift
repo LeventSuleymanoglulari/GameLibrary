@@ -17,6 +17,19 @@ enum GameMutation: Sendable {
         case rejected(message: String)
     }
 
+    @MainActor static func setStatus(
+        _ game: Game, keyPath: ReferenceWritableKeyPath<Game, Bool>, value: Bool,
+        save: () throws -> Void
+    ) -> Outcome {
+        let previous = game[keyPath: keyPath]
+        game[keyPath: keyPath] = value
+        do { try save(); return .applied }
+        catch {
+            game[keyPath: keyPath] = previous
+            return .saveFailed(message: GamePresentation.saveFailedMessage)
+        }
+    }
+
     @MainActor
     static func rename(
         _ game: Game,

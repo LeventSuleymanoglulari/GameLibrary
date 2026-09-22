@@ -76,18 +76,25 @@ kararlaştırılan davranışlara uygun sürümleri geçer.
 
 Ön koşul: 3. aşamadaki düzenleme akışlarının çalışması.
 
-- [ ] Kararlaştırılan saklama yöntemiyle oyunları, durumları ve puanları kaydet.
-- [ ] Uygulama kapatılıp açıldığında kayıtların korunduğunu doğrula.
-- [ ] Kaydetme başarısız olduğunda başarı gösterme; kullanıcıya hata bildir.
-- [ ] Boş sekmeler için açıklayıcı mesajlar ekle.
-- [ ] API anahtarı, kota, ağ, zaman aşımı ve eksik veri hatalarını doğrula.
-- [ ] İçe aktarılan kayıtların çevrimdışı açılmasını, düzenlenmesini ve mevcut elle kayıtların korunmasını doğrula.
-- [ ] Anahtarın günlüklerde görünmediğini ve kişisel verilerin API'ye gönderilmediğini doğrula.
-- [ ] Durumların sekmelere yansımasını, puan doğrulamasını ve kayıt davranışını
+- [x] Kararlaştırılan saklama yöntemiyle oyunları, durumları ve puanları kaydet.
+- [x] Uygulama kapatılıp açıldığında kayıtların korunduğunu doğrula.
+- [x] Kaydetme başarısız olduğunda başarı gösterme; kullanıcıya hata bildir.
+- [x] Boş sekmeler için açıklayıcı mesajlar ekle.
+- [x] API anahtarı, kota, ağ, zaman aşımı ve eksik veri hatalarını yerel yanıtlarla doğrula.
+- [x] İçe aktarılan kayıtların çevrimdışı açılmasını, düzenlenmesini ve mevcut elle kayıtların korunmasını doğrula.
+- [x] Uygulama kodunun anahtarı günlüğe yazmadığını ve test isteklerinin kişisel koleksiyon verilerini API'ye göndermediğini doğrula.
+- [x] Durumların sekmelere yansımasını, puan doğrulamasını ve kayıt davranışını
   kapsayan odaklı otomatik kontrolleri ekle; test komutunu README'ye yaz.
 
 **Tamamlanma ölçütü:** K10–K11'in kararlaştırılan sürümleri geçer; yeniden
 açılış ve başarısız kayıt senaryolarının sonuçları kaydedilir. K17–K20 geçer.
+
+Uygulama ve otomatik kontroller tamamlandı: 13 birim, 8 arayüz testi; eski
+şema geçişi, ayrı süreçte Keychain kontrolü ve Release derlemesi geçti.
+K10–K11, K17–K18 otomatik olarak doğrulandı. K19'un tam klavye/VoiceOver kabulü
+ve K20'nin dağıtım uygulaması/sistem günlükleri incelemesi henüz tamamlanmadı;
+canlı RAWG kabulüyle birlikte dağıtım öncesinde yapılmalıdır.
+[Kanıtlar ve kalan kabul sınırları](docs/asama-4-dogrulama.md) ayrı kayıtlıdır.
 
 ## 5. İlk masaüstü sürümünü hazırla
 

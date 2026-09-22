@@ -45,7 +45,7 @@ struct RAWGSearchResponse: Decodable {
 }
 
 enum RAWGServiceError: LocalizedError {
-    case missingKey, invalidResponse, unauthorized, rateLimited, serverError
+    case missingKey, invalidResponse, unauthorized, rateLimited, serverError, offline, timedOut
 
     var errorDescription: String? {
         switch self {
@@ -54,6 +54,8 @@ enum RAWGServiceError: LocalizedError {
         case .unauthorized: "RAWG API anahtarı veya erişim izni geçersiz."
         case .rateLimited: "RAWG istek kotası doldu. Lütfen daha sonra tekrar deneyin veya elle ekleyin."
         case .serverError: "RAWG şu anda yanıt veremiyor. Lütfen tekrar deneyin veya elle ekleyin."
+        case .offline: "Ağ bağlantısı kurulamadı. Tekrar deneyebilir veya elle ekleyebilirsiniz."
+        case .timedOut: "RAWG isteği zaman aşımına uğradı. Tekrar deneyebilir veya elle ekleyebilirsiniz."
         }
     }
 }
@@ -62,7 +64,7 @@ struct RAWGService {
     static let attributionURL = URL(string: "https://rawg.io/")!
     private let session: URLSession
 
-    init(session: URLSession = .shared) { self.session = session }
+    init(session: URLSession = URLSession(configuration: .ephemeral)) { self.session = session }
 
     static func safeSourceURL(_ value: String?) -> URL {
         guard let value, let url = URL(string: value), url.scheme == "https",
@@ -80,7 +82,16 @@ struct RAWGService {
         ]
         var request = URLRequest(url: components.url!)
         request.timeoutInterval = 30
-        let (data, response) = try await session.data(for: request)
+        let data: Data
+        let response: URLResponse
+        do { (data, response) = try await session.data(for: request) }
+        catch let error as URLError {
+            if error.code == .cancelled { throw CancellationError() }
+            // URLSession hataları anahtarlı adresi taşıyabilir; dışarı yalnızca sınıflandırılmış hata çıkar.
+            throw error.code == .timedOut ? RAWGServiceError.timedOut : RAWGServiceError.offline
+        }
+        catch is CancellationError { throw CancellationError() }
+        catch { throw RAWGServiceError.offline }
         guard let response = response as? HTTPURLResponse else { throw RAWGServiceError.invalidResponse }
         switch response.statusCode {
         case 200...299: break
@@ -107,6 +118,9 @@ struct RAWGService {
 
     init(fetch: @escaping (String, Int, String) async throws -> RAWGSearchResponse = { query, page, key in
         #if DEBUG
+        if Game_libraryApp.usesTestStorage && ProcessInfo.processInfo.arguments.contains("--ui-testing-offline") {
+            throw RAWGServiceError.offline
+        }
         if ProcessInfo.processInfo.arguments.contains("--ui-testing-catalog") {
             let rows = (1...20).map { ["id": $0, "name": "Katalog Oyunu \($0)"] as [String: Any] }
             let data = try JSONSerialization.data(withJSONObject: ["results": rows])
