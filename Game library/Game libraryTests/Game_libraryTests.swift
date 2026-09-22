@@ -79,9 +79,68 @@ import Synchronization
         XCTAssertFalse(saved.isWishlisted)
         XCTAssertFalse(saved.isPlayed)
         XCTAssertEqual(saved.rating, 9)
+        XCTAssertEqual(GamePresentation.statusLabels(for: saved), ["Kütüphane", "Oynanacak", "Bitti"])
+        saved.isCompleted = true
+        XCTAssertFalse(saved.isPlayed)
         saved.rating = nil
         try reopened.save()
         XCTAssertNil(try XCTUnwrap(ModelContext(container).fetch(FetchDescriptor<Game>()).first).rating)
+    }
+
+    func testTitleAndRatingMutationsRejectOrApply() throws {
+        let container = try ModelContainer(for: Game.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = ModelContext(container)
+        let game = Game(title: "Celeste")
+        game.rating = 8
+        context.insert(game)
+        try context.save()
+
+        switch GameMutation.rename(game, rawTitle: "  \n  ", save: context.save) {
+        case .rejected(let message):
+            XCTAssertEqual(message, GamePresentation.emptyTitleMessage)
+        default:
+            XCTFail("Expected rename rejection")
+        }
+        XCTAssertEqual(game.title, "Celeste")
+
+        switch GameMutation.manualDraft(from: " \t ") {
+        case .rejected(let message):
+            XCTAssertEqual(message, GamePresentation.emptyTitleMessage)
+        case .ok:
+            XCTFail("Expected manualDraft rejection")
+        }
+
+        switch GameMutation.setRating(game, raw: 0, save: context.save) {
+        case .rejected(let message):
+            XCTAssertEqual(message, GamePresentation.ratingOutOfScaleMessage)
+        default:
+            XCTFail("Expected setRating(0) rejection")
+        }
+        XCTAssertEqual(game.rating, 8)
+
+        switch GameMutation.setRating(game, raw: 11, save: context.save) {
+        case .rejected(let message):
+            XCTAssertEqual(message, GamePresentation.ratingOutOfScaleMessage)
+        default:
+            XCTFail("Expected setRating(11) rejection")
+        }
+        XCTAssertEqual(game.rating, 8)
+
+        switch GameMutation.setRating(game, raw: 9, save: context.save) {
+        case .applied:
+            break
+        default:
+            XCTFail("Expected setRating(9) to apply")
+        }
+        XCTAssertEqual(game.rating, 9)
+
+        switch GameMutation.setRating(game, raw: nil, save: context.save) {
+        case .applied:
+            break
+        default:
+            XCTFail("Expected setRating(nil) to clear")
+        }
+        XCTAssertNil(game.rating)
     }
 
     func testSearchSnapshotsQueryDeduplicatesAndRetriesFailedPage() async throws {

@@ -63,6 +63,9 @@ struct ContentView: View {
                 }
                 .accessibilityHint("RAWG kataloğunda arama veya elle oyun ekleme akışını açar.")
             }
+            ToolbarItemGroup(placement: .automatic) {
+                libraryTabShortcutButtons
+            }
         }
         .sheet(isPresented: $isShowingAddGame, onDismiss: {
             selectedGame = pendingGame
@@ -76,6 +79,30 @@ struct ContentView: View {
         .sheet(item: $selectedGame) { game in
             GameDetailSheet(game: game)
         }
+    }
+
+    @ViewBuilder
+    private var libraryTabShortcutButtons: some View {
+        Button("Tüm Oyunlar") { selectedTab = .allGames }
+            .keyboardShortcut("1", modifiers: .command)
+            .opacity(0)
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+        Button("Kütüphanem") { selectedTab = .library }
+            .keyboardShortcut("2", modifiers: .command)
+            .opacity(0)
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+        Button("Wishlist") { selectedTab = .wishlist }
+            .keyboardShortcut("3", modifiers: .command)
+            .opacity(0)
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
+        Button("Oynanacak") { selectedTab = .toPlay }
+            .keyboardShortcut("4", modifiers: .command)
+            .opacity(0)
+            .frame(width: 0, height: 0)
+            .accessibilityHidden(true)
     }
 }
 
@@ -92,7 +119,7 @@ private struct GameListView: View {
                     systemImage: "gamecontroller",
                     description: Text(tab == .allGames
                         ? "Başlamak için araç çubuğundan Oyun Ekle'yi seçin."
-                        : "Oyun durumlarını bir sonraki aşamada düzenleyebilirsiniz.")
+                        : GamePresentation.emptyFilteredTabDescription)
                 )
             } else {
                 ScrollView {
@@ -118,16 +145,17 @@ private struct GameCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(game.title).font(.headline)
-            if !statusLabels.isEmpty || game.rating != nil {
+            let labels = GamePresentation.statusLabels(for: game)
+            if !labels.isEmpty || game.rating != nil {
                 HStack(spacing: 6) {
-                    ForEach(statusLabels, id: \.self) { label in
+                    ForEach(labels, id: \.self) { label in
                         Text(label)
                             .font(.caption.weight(.medium))
                             .padding(.horizontal, 8).padding(.vertical, 4)
                             .background(.tint.opacity(0.14), in: Capsule())
                     }
-                    if let rating = game.rating {
-                        Text("Puan: \(rating)/10")
+                    if let chip = GamePresentation.ratingChip(game.rating) {
+                        Text(chip)
                             .font(.caption.weight(.medium))
                             .padding(.horizontal, 8).padding(.vertical, 4)
                             .background(.orange.opacity(0.16), in: Capsule())
@@ -143,17 +171,7 @@ private struct GameCard: View {
         .background(.quaternary, in: RoundedRectangle(cornerRadius: 12))
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(game.title)
-        .accessibilityValue((statusLabels + (game.rating.map { ["Puan: \($0)/10"] } ?? [])).joined(separator: ", "))
-    }
-
-    private var statusLabels: [String] {
-        [
-            game.isInLibrary ? "Kütüphane" : nil,
-            game.isWishlisted ? "Wishlist" : nil,
-            game.isToPlay ? "Oynanacak" : nil,
-            game.isPlayed ? "Oynandı" : nil,
-            game.isCompleted ? "Bitti" : nil
-        ].compactMap { $0 }
+        .accessibilityValue(GamePresentation.accessibilityValue(for: game))
     }
 }
 
@@ -161,17 +179,33 @@ private struct GameDetailSheet: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
     @Bindable var game: Game
+    @State private var titleDraft: String
     @State private var errorMessage: String?
+    @FocusState private var focus: LibraryFocusTarget?
+
+    init(game: Game) {
+        self.game = game
+        _titleDraft = State(initialValue: game.title)
+    }
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    statusToggle("Kütüphanem", value: $game.isInLibrary)
-                    statusToggle("Wishlist", value: $game.isWishlisted)
-                    statusToggle("Oynanacak", value: $game.isToPlay)
-                    statusToggle("Oynandı", value: $game.isPlayed)
-                    statusToggle("Bitti", value: $game.isCompleted)
+                    TextField("Oyun adı", text: $titleDraft)
+                        .accessibilityIdentifier("detailTitle")
+                        .focused($focus, equals: .detailTitle)
+                        .onSubmit { commitTitle() }
+                    Button("Adı Kaydet") { commitTitle() }
+                } header: {
+                    Text("Ad")
+                }
+                Section {
+                    statusToggle("Kütüphanem", value: $game.isInLibrary, target: .statusLibrary, identifier: "status-library")
+                    statusToggle("Wishlist", value: $game.isWishlisted, target: .statusWishlist, identifier: "status-wishlist")
+                    statusToggle("Oynanacak", value: $game.isToPlay, target: .statusToPlay, identifier: "status-to-play")
+                    statusToggle("Oynandı", value: $game.isPlayed, target: .statusPlayed, identifier: "status-played")
+                    statusToggle("Bitti", value: $game.isCompleted, target: .statusCompleted, identifier: "status-completed")
                 } header: {
                     Text("Durumlar")
                 } footer: {
@@ -179,16 +213,17 @@ private struct GameDetailSheet: View {
                 }
                 Section {
                     Menu {
-                        Button("Puanı kaldır") { updateRating(nil) }
+                        Button("Puanı kaldır") { commitRating(nil) }
                         Divider()
-                        ForEach(1...10, id: \.self) { rating in
-                            Button("\(rating)/10") { updateRating(rating) }
+                        ForEach(PersonalRating.menuValues, id: \.self) { rating in
+                            Button("\(rating)/10") { commitRating(rating) }
                         }
                     } label: {
-                        LabeledContent("Puan", value: game.rating.map { "\($0)/10" } ?? "Verilmedi")
+                        LabeledContent("Puan", value: GamePresentation.ratingLabel(game.rating))
                     }
+                    .focused($focus, equals: .ratingMenu)
                     .accessibilityLabel("Kişisel puan")
-                    .accessibilityValue(game.rating.map { "\($0)/10" } ?? "Verilmedi")
+                    .accessibilityValue(GamePresentation.ratingLabel(game.rating))
                 } header: {
                     Text("Kişisel puan")
                 }
@@ -204,12 +239,24 @@ private struct GameDetailSheet: View {
                 if let errorMessage { Text(errorMessage).foregroundStyle(.red) }
             }
             .navigationTitle(game.title)
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button("Bitti") { dismiss() } } }
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(GamePresentation.detailDismissTitle) { dismiss() }
+                        .accessibilityIdentifier(GamePresentation.detailDismissIdentifier)
+                        .focused($focus, equals: .dismissDetail)
+                }
+            }
         }
         .frame(minWidth: 440, minHeight: 400)
+        .defaultFocus($focus, .detailTitle)
     }
 
-    private func statusToggle(_ title: String, value: Binding<Bool>) -> some View {
+    private func statusToggle(
+        _ title: String,
+        value: Binding<Bool>,
+        target: LibraryFocusTarget,
+        identifier: String
+    ) -> some View {
         Toggle(title, isOn: Binding(
             get: { value.wrappedValue },
             set: { newValue in
@@ -218,13 +265,27 @@ private struct GameDetailSheet: View {
                 save { value.wrappedValue = oldValue }
             }
         ))
+        .focused($focus, equals: target)
+        .accessibilityIdentifier(identifier)
     }
 
-    private func updateRating(_ rating: Int?) {
-        guard rating == nil || (1...10).contains(rating!) else { return }
-        let oldRating = game.rating
-        game.rating = rating
-        save { game.rating = oldRating }
+    private func commitTitle() {
+        switch GameMutation.rename(game, rawTitle: titleDraft, save: modelContext.save) {
+        case .applied:
+            errorMessage = nil
+            titleDraft = game.title
+        case .rejected(let message), .saveFailed(let message):
+            errorMessage = message
+        }
+    }
+
+    private func commitRating(_ raw: Int?) {
+        switch GameMutation.setRating(game, raw: raw, save: modelContext.save) {
+        case .applied:
+            errorMessage = nil
+        case .rejected(let message), .saveFailed(let message):
+            errorMessage = message
+        }
     }
 
     private func save(revert: () -> Void) {
@@ -233,7 +294,7 @@ private struct GameDetailSheet: View {
             errorMessage = nil
         } catch {
             revert()
-            errorMessage = "Değişiklik kaydedilemedi. Lütfen tekrar deneyin."
+            errorMessage = GamePresentation.saveFailedMessage
         }
     }
 }
@@ -253,6 +314,7 @@ private struct AddGameSheet: View {
     @State private var pendingDraft: GameDraft?
     @State private var nameMatches: [Game] = []
     @State private var requestTask: Task<Void, Never>?
+    @FocusState private var focus: LibraryFocusTarget?
 
     var body: some View {
         NavigationStack {
@@ -314,12 +376,19 @@ private struct AddGameSheet: View {
                     }
                 }
                 Section("Elle ekle") {
-                    TextField("Oyun adı", text: $manualTitle).accessibilityIdentifier("manualTitle")
+                    TextField("Oyun adı", text: $manualTitle)
+                        .accessibilityIdentifier("manualTitle")
+                        .focused($focus, equals: .addManualTitle)
                     Button("Elle Ekle") {
-                        do { try add(GameDraft.manual(manualTitle)) }
-                        catch { errorMessage = "Yerel kayıt tamamlanamadı. Girdiğiniz ad korunuyor; tekrar deneyebilirsiniz." }
+                        switch GameMutation.manualDraft(from: manualTitle) {
+                        case .ok(let draft):
+                            do { try add(draft) }
+                            catch { errorMessage = "Yerel kayıt tamamlanamadı. Girdiğiniz ad korunuyor; tekrar deneyebilirsiniz." }
+                        case .rejected(let message):
+                            errorMessage = message
+                        }
                     }
-                    .disabled(manualTitle.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .focused($focus, equals: .addManualSubmit)
                     Text("Elle ekleme çevrimdışı da çalışır.").font(.footnote)
                 }
                 if let errorMessage { Text(errorMessage).foregroundStyle(.red) }

@@ -49,7 +49,7 @@ final class Game {
     }
 }
 
-struct GameDraft {
+struct GameDraft: Equatable {
     let title: String
     let catalog: RAWGGame?
 
