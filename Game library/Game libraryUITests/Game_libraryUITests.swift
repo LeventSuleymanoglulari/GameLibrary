@@ -103,7 +103,7 @@ final class Game_libraryUITests: XCTestCase {
         title.typeText("Portal UI")
         app.buttons["Elle Ekle"].click()
         XCTAssertTrue(app.staticTexts["Portal UI"].firstMatch.waitForExistence(timeout: 5))
-        let screenshot = XCTAttachment(screenshot: app.sheets.firstMatch.screenshot())
+        let screenshot = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
         screenshot.name = "Phase 2 manual game detail"
         screenshot.lifetime = .keepAlways
         add(screenshot)
@@ -134,7 +134,7 @@ final class Game_libraryUITests: XCTestCase {
         let add = app.buttons["Seçilen Oyunu Ekle"]
         for _ in 0..<10 where !add.isHittable { app.scrollViews.firstMatch.swipeUp() }
         XCTAssertTrue(add.isHittable)
-        let screenshot = XCTAttachment(screenshot: app.sheets.firstMatch.screenshot())
+        let screenshot = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
         screenshot.name = "Phase 2 catalog selection and manual fallback"
         screenshot.lifetime = .keepAlways
         self.add(screenshot)
