@@ -66,6 +66,9 @@ Bu bölümdeki kurallar ilk sürüm için kesinleştirilmiştir.
 - Oyun eklemenin öncelikli yolu ücretsiz RAWG API'sinde arama yapıp seçilen
   oyunu içe aktarmaktır. Sonuç yalnızca kullanıcı onayı ve başarılı yerel
   kayıt sonrasında Tüm Oyunlar'a eklenir.
+- Otomatik katalog, kullanıcının başlattığı ayrı bir içe aktarmadır. Oyunlar
+  tek tek onaylanmadan Tüm Oyunlar'a kaydedilir. Arama ve elle ekleme kullanılabilir kalır.
+  Arka planda kendiliğinden katalog indirme yapılmaz.
 - **Elle ekle** her zaman görünür. Sonuç bulunamaması, anahtar eksikliği,
   çevrimdışı kullanım ve API hatalarında yedek yoldur. Aranan ad forma taşınır;
   boş veya yalnızca boşluk içeren ad kabul edilmez.
@@ -116,12 +119,12 @@ ve puanlama, önceki bölümdeki kurallara dayanır.
 | --- | --- | --- |
 | İşletim sistemi | macOS 26 ve sonrası | Kurulum ve paketleme macOS ile sınırlıdır. |
 | Masaüstü teknolojisi | Swift 6, SwiftUI, SwiftData ve Xcode 27 | Yerel macOS geliştirme ve dağıtım araçları |
-| Oyun ekleme | RAWG ücretsiz API'sinden içe aktarma, yedek olarak elle ad girişi | Katalog için internet ve API anahtarı gerekir; elle ekleme çevrimdışıdır. |
+| Oyun ekleme | RAWG ücretsiz API'sinden arama, kullanıcının başlattığı otomatik katalog aktarımı ve yedek olarak elle ad girişi | Katalog için internet ve API anahtarı gerekir; elle ekleme çevrimdışıdır. |
 | Veri saklama | Yerel, kalıcı SwiftData deposu | Çevrimdışı kullanım; bulut eşitlemesi yoktur. |
 | Puan ölçeği | 1–10 tam sayı, isteğe bağlı | Puan girişi doğrulanır. |
 | Durum ilişkileri | Bağımsız seçim | Otomatik durum değişikliği yoktur. |
 
-İlk plan Steam veya Epic hesap bağlantısı, toplu katalog indirme, arkadaş sistemi, herkese
+İlk plan Steam veya Epic hesap bağlantısı, arkadaş sistemi, herkese
 açık profil, oyun başlatma ya da cihazlar arası eşitleme taahhüt etmez.
 Bunlar ayrıca istenirse kapsam ve veri kullanımı değerlendirilir.
 
@@ -133,7 +136,8 @@ Bunlar ayrıca istenirse kapsam ve veri kullanımı değerlendirilir.
 | 2. Oyun listesini hazırla | API araması, seçilen oyunu içe aktarma, elle ekleme ve dört sekme | Her iki ekleme yolu aynı yerel listeyi besler; yeniden içe aktarma kayıt çoğaltmaz. |
 | 3. Durum ve puan düzenlemeyi ekle | Seçimleri yansıtan kutular ve kişisel puan | Değişiklikler bütün sekmelerde aynı kayda yansır. |
 | 4. Kalıcılığı ve hataları doğrula | Kapatıp açınca korunan kayıtlar, boş durum ve hata mesajları | Veri kaybı ve başarısız kayıt senaryoları kontrol edilir. |
-| 5. Masaüstü sürümünü hazırla | Seçilen sistemde kurulabilir uygulama | Kurulum ve aşağıdaki kabul senaryoları gerçek uygulamada geçer. |
+| 6. Otomatik katalog | Kullanıcı komutuyla RAWG kataloğunu yerel listeye aktarma | Aktarılan oyunlar Tüm Oyunlar'da görünür; kota veya bağlantı hatasında aktarım durur ve sürdürülebilir. |
+| 5. Masaüstü sürümünü hazırla | Seçilen sistemde kurulabilir uygulama | 6. adımdan sonra kurulum ve aşağıdaki kabul senaryoları gerçek uygulamada geçer. |
 
 Takvim ve efor, ilk adımdaki kararlar temel alınarak sonraki aşamalarda tahmin edilir.
 

@@ -9,7 +9,7 @@ engellemez.
 | --- | --- |
 | Hedef işletim sistemi | macOS 26 ve sonraki sürümler. İlk sürüm yalnızca macOS için dağıtılacak. |
 | Masaüstü teknolojisi | Swift 6, SwiftUI ve SwiftData; geliştirme ve paketleme için Xcode 27. |
-| Oyun ekleme | Öncelikli yol, ücretsiz RAWG API'sinde oyun arayıp seçilen sonucu içe aktarmaktır. Elle ad girişi her zaman yedek yol olarak kullanılabilir. |
+| Oyun ekleme | Öncelikli yol, ücretsiz RAWG API'sinde oyun arayıp seçilen sonucu içe aktarmaktır. Kullanıcının başlattığı otomatik katalog aktarımı da ilk sürüme dahildir. Elle ad girişi her zaman yedek yol olarak kullanılabilir. |
 | Veri saklama | SwiftData'nın uygulamaya ait yerel, kalıcı deposu kullanılır. Kayıtlar uygulama yeniden açıldığında korunur; bulut eşitlemesi yapılmaz. |
 | Puan ölçeği | Puan isteğe bağlıdır; 1–10 arasında tam sayıdır. Kullanıcı puanı değiştirebilir veya kaldırabilir. |
 | Durum kuralları | Kütüphane, Wishlist, Oynanacak, Oynandı ve Bitti birbirinden bağımsızdır. Bir durumun seçilmesi veya kaldırılması başka bir durumu otomatik değiştirmez. |
@@ -49,6 +49,14 @@ uç noktası kullanılır. `search`, `page`, `page_size` ve `key` parametreleri
 gönderilir. Kullanıcı **Ara** komutunu verdiğinde istek yapılır; her tuşta veya
 arka planda bütün katalog için istek yapılmaz. Sonuçlar sayfa başına 20 oyunla
 gösterilir. Sonraki sayfa yalnızca kullanıcı istediğinde yüklenir.
+
+Otomatik katalog ayrı bir kullanıcı komutudur. Aynı `GET /api/games` uç noktası
+sayfa sayfa çağrılır ve sonuçlar tek tek onay olmadan yerel kayda geçer.
+Ücretsiz plan kotası, `429`, ağ veya anahtar hatasında aktarım durur; kullanıcı
+kaldığı sayfadan sürdürebilir. Arka planda kendiliğinden indirme veya metadata
+yenileme yapılmaz. Aşama ve tamamlanma ölçütü
+[yol haritasının 6. aşamasında](../ROADMAP.md#6-otomatik-katalog-içe-aktarma)
+tanımlanmıştır.
 
 ## İçe aktarma ve elle ekleme sözleşmesi
 
@@ -103,6 +111,6 @@ haritasında açık iştir.
 
 ## Kapsam dışı
 
-Windows, Linux, Steam/Epic hesap bağlantısı, toplu katalog indirme, bulut
+Windows, Linux, Steam/Epic hesap bağlantısı, bulut
 eşitlemesi, kullanıcı hesabı, arkadaş sistemi, herkese açık profil ve oyunu
 uygulamadan başlatma ilk sürüm kapsamı dışındadır.
