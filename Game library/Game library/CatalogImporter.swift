@@ -98,9 +98,11 @@ import SwiftData
                         descriptor.fetchLimit = 1
                         guard try context.fetch(descriptor).isEmpty else { continue }
                         // Aynı adlı elle kayıtlar birleştirilmez. Kişisel alanlar varsayılan boş kalır.
-                        context.insert(Game(title: draft.title, source: "rawg", externalID: id,
-                                            sourceURL: row.sourceURL.absoluteString,
-                                            releaseDate: row.released, platforms: row.platformNames))
+                        let game = Game(title: draft.title, source: "rawg", externalID: id,
+                                        sourceURL: row.sourceURL.absoluteString,
+                                        releaseDate: row.released, platforms: row.platformNames)
+                        game.artworkURL = row.artwork?.url.absoluteString
+                        context.insert(game)
                         inserted += 1
                     }
                     progress.nextPage = page + 1

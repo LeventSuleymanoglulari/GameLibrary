@@ -101,7 +101,7 @@ olduğunu onaylar. Elle eklenen bir oyunu sonradan RAWG kaydına dönüştürme 
 sürümde yoktur.
 
 İçe aktarılan ad boşsa veya dış kimlik geçersizse kayıt oluşturulmaz ve elle
-ekleme sunulur. Kapak resmi indirme ilk sürüm kapsamına alınmamıştır.
+ekleme sunulur. İçe aktarılan oyunun `background_image` adresi `https://media.rawg.io` ise rafta ve ayrıntıda gösterilir. Elle eklenen oyunda kapak yoktur. Katalog sayfaları için kapaklar önceden indirilmez.
 API'den gelen metin düz metin olarak gösterilir; kaynak bağlantıları yalnızca
 HTTPS RAWG adresleri olarak doğrulanır. Verinin kullanıldığı arama ve kayıt
 görünümlerinde görünür, tıklanabilir RAWG kaynak bağlantısı bulunur.

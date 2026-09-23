@@ -23,6 +23,7 @@ final class Game {
     var isPlayed: Bool = false
     var isCompleted: Bool = false
     var rating: Int?
+    var artworkURL: String?
 
     init(
         title: String,
@@ -92,6 +93,7 @@ extension Game {
         let game = Game(title: draft.title, source: draft.catalog == nil ? "manual" : "rawg",
                         externalID: draft.catalog?.id, sourceURL: draft.catalog?.sourceURL.absoluteString,
                         releaseDate: draft.catalog?.released, platforms: draft.catalog?.platformNames ?? [])
+        game.artworkURL = draft.catalog?.artwork?.url.absoluteString
         context.insert(game)
         do {
             if let save { try save() } else { try context.save() }

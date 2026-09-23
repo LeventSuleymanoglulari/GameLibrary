@@ -1,14 +1,26 @@
 import Foundation
 import Observation
 
+struct CatalogArtwork: Equatable, Hashable {
+    let url: URL
+
+    static func parse(_ raw: String?) -> CatalogArtwork? {
+        guard let raw, let url = URL(string: raw),
+              url.scheme == "https", url.host?.lowercased() == "media.rawg.io",
+              url.user == nil, url.password == nil, url.port == nil else { return nil }
+        return CatalogArtwork(url: url)
+    }
+}
+
 struct RAWGGame: Decodable, Identifiable, Hashable {
     let id: Int
     let name: String
     let released: String?
     let slug: String?
     let platformNames: [String]
+    let artwork: CatalogArtwork?
 
-    private enum CodingKeys: String, CodingKey { case id, name, released, slug, platforms }
+    private enum CodingKeys: String, CodingKey { case id, name, released, slug, platforms, backgroundImage = "background_image" }
     private struct PlatformContainer: Decodable {
         struct Platform: Decodable { let name: String? }
         let platform: Platform?
@@ -28,6 +40,7 @@ struct RAWGGame: Decodable, Identifiable, Hashable {
         slug = try? container.decode(String.self, forKey: .slug)
         let platforms = (try? container.decode([PlatformContainer].self, forKey: .platforms)) ?? []
         platformNames = Array(Set(platforms.compactMap { $0.platform?.name }.filter { !$0.isEmpty })).sorted()
+        artwork = CatalogArtwork.parse(try? container.decode(String.self, forKey: .backgroundImage))
     }
 
     var sourceURL: URL {

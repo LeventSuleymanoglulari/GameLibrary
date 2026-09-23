@@ -52,6 +52,7 @@ AFTER = COMMON.replace("for: Game.self,", "for: Game.self, CatalogImportProgress
         precondition(game.externalID == nil, "Dış kimlik boş değil")
         precondition(game.sourceURL == nil, "Kaynak bağlantısı boş değil")
         precondition(game.releaseDate == nil, "Çıkış tarihi boş değil")
+        precondition(game.artworkURL == nil, "Eski kayıtta kapak adresi oluştu")
         precondition(!game.isPlayed && !game.isCompleted && game.rating == nil, "Yeni kişisel alanlar boş değil")
         let progressCount = try context.fetchCount(FetchDescriptor<CatalogImportProgress>())
         precondition(progressCount == 0, "Aktarım kendiliğinden başlamamalı")
