@@ -100,23 +100,25 @@ canlı RAWG kabulüyle birlikte dağıtım öncesinde yapılmalıdır.
 
 Ön koşul: 6. aşamadaki otomatik katalog içe aktarmanın tamamlanması.
 
-- [x] Uygulamayı seçilen işletim sistemi için yerel önizleme DMG/ZIP paketi haline getir.
+- [ ] Uygulamayı seçilen işletim sistemi için kurulabilir paket haline getir.
 - [x] Paketleme, kurulum ve çalıştırma adımlarını README'de belgele.
 - [x] Dağıtım öncesi RAWG ücretsiz kullanım koşullarını ve atıf bağlantılarını yeniden kontrol et.
 - [ ] Kurulan uygulamada geçerli K1–K20 senaryolarını doğrula; test ve
   varsa lint komutlarını çalıştır.
-- [x] Doğrulanan paket sürümünü, işletim sistemini, sonuçları ve bilinen
+- [ ] Doğrulanan uygulama sürümünü, işletim sistemini, sonuçları ve bilinen
   sınırlamaları sürüm notlarına kaydet.
 
 **Tamamlanma ölçütü:** Uygulama hedef sistemde kurulup açılır; kabul
 senaryoları geçer ve ilk sürümün kullanım adımları belgelenmiştir.
 
-Paketleme altyapısı hazırdır; **genel dağıtım ve aşamanın tam kabulü bekliyor**.
-Yerel önizleme ad-hoc imzalıdır, notarize edilmemiştir. Phase 6, kurulu Release
-K1–K20 kabulü, canlı RAWG ve erişilebilirlik kontrolleri tamamlanmadan ilk sürüm
-tamamlandı sayılmaz. 23 Eylül koşusunda 13 birim testi geçti; UI otomasyon
-başlatması zaman aşımına uğradı. [Kurulum](docs/kurulum-macos.md) ve
-[sürüm notları](docs/surum-notlari-1.0-onizleme.md) kanıt ve açık kapıları içerir.
+Yerel önizleme betiği DMG ve ZIP üretir. Paket ad-hoc imzalıdır ve notarize
+edilmemiştir. 6. aşama bitmeden, kurulu Release uygulamasında K1–K20 geçmeden
+ve uygulama açılışı kabul edilmeden bu aşama tamamlanmış sayılmaz. 23 Eylül
+koşusunda 13 birim testi geçti. UI otomasyonu başlamadan zaman aşımına uğradı.
+Aynı Release derlemesi kod kapsamı araçları içeriyordu. Paket betiği artık
+`ENABLE_CODE_COVERAGE=NO` ile derler. [Kurulum](docs/kurulum-macos.md) ve
+[sürüm notları](docs/surum-notlari-1.0-onizleme.md) paket kanıtını ve açık
+kapıları içerir.
 
 ## 6. Otomatik katalog içe aktarma
 

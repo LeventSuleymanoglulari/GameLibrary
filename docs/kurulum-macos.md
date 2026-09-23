@@ -14,7 +14,8 @@ Betik yeni `dist/preview-<UTC zamanı>/` dizininde Release DMG ve ZIP,
 `SHA256SUMS`, `manifest.json` ve derleme günlüğü oluşturur. Eski çıktıları
 ezmez. DMG'yi salt okunur bağlar, uygulamayı geçici kurulum konumuna kopyalar,
 ZIP'i ayrı çıkarır ve ikisinin imzasını, mimarilerini, minimum işletim sistemi
-sürümünü ve sandbox/ağ yetkilerini kontrol eder. Uygulamayı başlatmaz;
+sürümünü, sandbox/ağ yetkilerini ve kod kapsamı aracının yokluğunu kontrol eder.
+Uygulamayı başlatmaz;
 kullanıcının koleksiyonunu ve Keychain kaydını değiştirmez.
 
 Paket **ad-hoc imzalı yerel önizlemedir**, Developer ID imzalı/notarize edilmiş
@@ -42,7 +43,7 @@ ve Keychain anahtarını otomatik silmez. Veri temizleme/göç betiği çalışt
 
 ## Genel dağıtıma geçiş
 
-Bu betik yayınlama yapmaz. Önce Phase 6 ve sürüm notlarındaki kabul kapıları
+Bu betik yayınlama yapmaz. Önce 6. aşama ve sürüm notlarındaki kabul kapıları
 tamamlanmalı, dağıtım yetkisi alınmalıdır. Ardından Xcode Organizer ile
 Developer ID imzalı, hardened runtime etkin bir archive dışa aktarılmalı;
 Apple notarization tamamlanıp bilet eklenmeli ve son paket temiz bir Mac'te

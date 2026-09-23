@@ -1,7 +1,7 @@
 # 1.0 (1) — Yerel macOS önizlemesi
 
 Tarih: 23 Eylül 2026. Bu paket ilk sürümün genel dağıtım onayı değildir.
-Phase 6 otomatik katalog içe aktarma henüz tamamlanmadı.
+6. aşama otomatik katalog içe aktarma henüz tamamlanmadı.
 
 ## Kapsam
 
@@ -24,6 +24,9 @@ arayüz testi bu koşuda çalışmadı, başarılı sayılmadı. Önceki aşaman
 kanıtı yeni raf arayüzünün kabulü yerine geçmez. Kurulu Release uygulaması
 kişisel veriye dokunmamak için başlatılmadı; ayrı test macOS hesabında kabul
 gerekiyor. Paket kontrolü yalnızca çıkarma/kopyalama, imza ve metadata kanıtıdır.
+Aynı gün üretilen Release ikilisi kod kapsamı sayaçları içeriyordu. Betik bunu
+kontrol etmiyordu. Güncel betik `ENABLE_CODE_COVERAGE=NO` ile derler ve
+`___llvm_profile_begin_counters` simgesini reddeder.
 
 Universal Release derlemesi, DMG bütünlüğü, DMG'den geçici kurulum kopyası ve
 ZIP'ten çıkarılan uygulamanın imza/yetki/mimari kontrolleri geçti. Sandbox ve
@@ -44,11 +47,11 @@ içermez. Her kullanıcı kendi anahtarıyla istek yapar.
 
 Arama sonuçları, seçilen oyun, ithal oyun kartı ve ayrıntılardaki RAWG bağlantıları
 korunur. Ücretsiz plan kullanımı sınırsız veya kesintisiz servis garantisi değildir.
-Phase 6'nın toplu aktarımı için ayrıca kota ve kullanım uygunluğu değerlendirilmelidir.
+6. aşamanın toplu aktarımı için ayrıca kota ve kullanım uygunluğu değerlendirilmelidir.
 
 ## Dağıtım öncesi açık kapılar
 
-- Phase 6; ilk sürüm tamamlanma ölçütü.
+- 6. aşama. İlk sürüm tamamlanma ölçütü.
 - Kurulan Release uygulamasında, ayrı test macOS hesabıyla K1–K20'nin tamamı.
   Debug testlerinin geçmesi kurulu Release kabulü sayılmaz.
 - Gerçek RAWG anahtarıyla servis kabulü; gerçek kullanıcı anahtarı ve sistem

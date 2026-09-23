@@ -59,7 +59,7 @@ Release DMG/ZIP ve bütünlük manifesti `dist/preview-<UTC zamanı>/` altında
 üretilir. Paket macOS 26+ için arm64/x86_64 içerir; ad-hoc imzalıdır, notarize
 edilmiş genel dağıtım değildir. [Kurulum ve paketleme](docs/kurulum-macos.md)
 ile [1.0 önizleme sürüm notlarını](docs/surum-notlari-1.0-onizleme.md) okuyun.
-Phase 6 ve kurulu Release kabulü tamamlanmadan ilk sürüm bitmiş sayılmaz.
+6. aşama ve kurulu Release kabulü tamamlanmadan ilk sürüm bitmiş sayılmaz.
 
 ## Oyun ekleme adımları
 
