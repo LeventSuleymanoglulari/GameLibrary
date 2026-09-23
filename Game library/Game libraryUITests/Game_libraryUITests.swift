@@ -1,12 +1,77 @@
 import XCTest
 
 final class Game_libraryUITests: XCTestCase {
+    @MainActor private func launch(_ app: XCUIApplication) {
+        app.launch()
+        app.activate()
+        XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 10), "Test window did not open")
+    }
+
+    @MainActor func testBulkImportStopsAtQuotaAndResumesAfterRelaunch() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["GAME_LIBRARY_TEST_STORE_ID"] = UUID().uuidString
+        app.launchArguments = ["--ui-testing", "--ui-testing-bulk", "--ui-testing-bulk-quota"]
+        launch(app)
+        app.buttons["Oyun Ekle"].click()
+        let manual = app.textFields["manualTitle"]
+        XCTAssertTrue(manual.waitForExistence(timeout: 5))
+        manual.click()
+        manual.typeText("Toplu Oyun 1")
+        app.buttons["Elle Ekle"].click()
+        XCTAssertTrue(app.buttons["detailDismiss"].waitForExistence(timeout: 5))
+        app.buttons["detailDismiss"].click()
+        app.buttons["Oyun Ekle"].click()
+        setBulkTestKey(app)
+        revealBulkControls(app)
+        app.buttons["bulkStart"].click()
+        let quota = app.staticTexts["RAWG istek kotası doldu. Lütfen daha sonra tekrar deneyin veya elle ekleyin."]
+        XCTAssertTrue(quota.waitForExistence(timeout: 10), app.debugDescription)
+        XCTAssertTrue((app.staticTexts["bulkProgress"].value as? String ?? "").contains("Sıradaki sayfa: 2"), app.debugDescription)
+        XCTAssertEqual(app.buttons["Tüm Oyunlar"].value as? String, "2")
+        app.terminate()
+
+        app.launchArguments = ["--ui-testing", "--ui-testing-bulk"]
+        launch(app)
+        XCTAssertTrue(app.buttons["Oyun Ekle"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.buttons["Tüm Oyunlar"].value as? String, "2")
+        app.buttons["Oyun Ekle"].click()
+        setBulkTestKey(app)
+        revealBulkControls(app)
+        XCTAssertTrue((app.staticTexts["bulkProgress"].value as? String ?? "").contains("Sıradaki sayfa: 2"))
+        app.buttons["bulkStart"].click()
+        XCTAssertTrue(app.staticTexts["Katalog aktarımı tamamlandı."].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.buttons["Tüm Oyunlar"].value as? String, "3")
+        XCTAssertFalse((app.buttons["gameCard-Toplu Oyun 2"].value as? String ?? "").contains("Puan"))
+        let screenshot = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        screenshot.name = "Phase 6 resumed bulk import"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.terminate()
+    }
+
+    @MainActor private func setBulkTestKey(_ app: XCUIApplication) {
+        app.buttons["API Anahtarını Ayarla"].click()
+        let key = app.secureTextFields.firstMatch
+        XCTAssertTrue(key.waitForExistence(timeout: 5))
+        key.click()
+        key.typeText("synthetic-not-real")
+        app.buttons["Kaydet"].click()
+    }
+
+    @MainActor private func revealBulkControls(_ app: XCUIApplication) {
+        let button = app.buttons["bulkStart"]
+        let form = app.scrollViews.containing(.textField, identifier: "manualTitle").firstMatch
+        for _ in 0..<12 where !button.isHittable { form.swipeUp() }
+        XCTAssertTrue(button.isHittable, app.debugDescription)
+    }
+
     @MainActor func testDiskRelaunchAndOfflineEditing() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchEnvironment["GAME_LIBRARY_TEST_STORE_ID"] = UUID().uuidString
         app.launchArguments = ["--ui-testing", "--ui-testing-catalog"]
-        app.launch()
+        launch(app)
         app.buttons["Oyun Ekle"].click()
         let query = app.textFields["searchTitle"]
         XCTAssertTrue(query.waitForExistence(timeout: 5))
@@ -27,7 +92,7 @@ final class Game_libraryUITests: XCTestCase {
         app.terminate()
 
         app.launchArguments = ["--ui-testing", "--ui-testing-offline"]
-        app.launch()
+        launch(app)
         let card = app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "gameCard-")).firstMatch
         XCTAssertTrue(card.waitForExistence(timeout: 5))
         XCTAssertTrue((card.value as? String ?? "").contains("Puan: 9/10"))
@@ -55,7 +120,7 @@ final class Game_libraryUITests: XCTestCase {
         XCTAssertTrue(app.buttons["detailDismiss"].waitForExistence(timeout: 5))
         app.buttons["detailDismiss"].click()
         app.terminate()
-        app.launch()
+        launch(app)
         XCTAssertTrue(app.buttons["gameCard-Offline Manual"].waitForExistence(timeout: 5))
         app.descendants(matching: .any)["Wishlist"].firstMatch.click()
         XCTAssertTrue(card.waitForExistence(timeout: 5))
@@ -72,7 +137,7 @@ final class Game_libraryUITests: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-edit-save-failure"]
-        app.launch()
+        launch(app)
         app.buttons["Oyun Ekle"].click()
         let title = app.textFields["manualTitle"]
         XCTAssertTrue(title.waitForExistence(timeout: 5))
@@ -92,7 +157,7 @@ final class Game_libraryUITests: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]
-        app.launch()
+        launch(app)
         for label in ["Tüm Oyunlar", "Kütüphanem", "Wishlist", "Oynanacak"] {
             XCTAssertTrue(app.descendants(matching: .any)[label].firstMatch.exists, "Missing tab: \(label) \(app.debugDescription)")
         }
@@ -122,7 +187,7 @@ final class Game_libraryUITests: XCTestCase {
         continueAfterFailure = false
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-catalog"]
-        app.launch()
+        launch(app)
         app.buttons["Oyun Ekle"].click()
         let query = app.textFields["searchTitle"]
         XCTAssertTrue(query.waitForExistence(timeout: 5), app.debugDescription)
@@ -146,7 +211,7 @@ final class Game_libraryUITests: XCTestCase {
     @MainActor func testFailedSaveRetainsManualInputAndSheet() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing", "--ui-testing-save-failure"]
-        app.launch()
+        launch(app)
         app.buttons["Oyun Ekle"].click()
         let title = app.textFields["manualTitle"]
         XCTAssertTrue(title.waitForExistence(timeout: 5))
@@ -161,7 +226,7 @@ final class Game_libraryUITests: XCTestCase {
     @MainActor func testStatusAndRatingAreEditedFromGameDetail() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]
-        app.launch()
+        launch(app)
         app.buttons["Oyun Ekle"].click()
         let title = app.textFields["manualTitle"]
         XCTAssertTrue(title.waitForExistence(timeout: 5))
@@ -206,7 +271,7 @@ final class Game_libraryUITests: XCTestCase {
     @MainActor func testEmptyManualAddWhitespaceRenameAndFilteredEmptyCopy() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]
-        app.launch()
+        launch(app)
 
         app.buttons["Oyun Ekle"].click()
         let title = app.textFields["manualTitle"]
@@ -251,7 +316,7 @@ final class Game_libraryUITests: XCTestCase {
     @MainActor func testCommandShortcutSelectsLibraryTab() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]
-        app.launch()
+        launch(app)
         XCTAssertTrue(
             app.staticTexts["Başlamak için araç çubuğundan Oyun Ekle'yi seçin."].waitForExistence(timeout: 5),
             app.debugDescription

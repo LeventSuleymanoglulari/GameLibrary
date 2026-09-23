@@ -227,6 +227,14 @@ import Synchronization
         XCTAssertEqual(CatalogURLProtocol.request?.httpMethod, "GET")
         XCTAssertNil(CatalogURLProtocol.request?.httpBody)
         XCTAssertNil(CatalogURLProtocol.request?.httpBodyStream)
+        _ = try await service.catalogPage(3, apiKey: "fixture")
+        let bulkURL = try XCTUnwrap(CatalogURLProtocol.requestURL)
+        let bulkItems = URLComponents(url: bulkURL, resolvingAgainstBaseURL: false)?.queryItems
+        XCTAssertEqual(bulkURL.host, "api.rawg.io")
+        XCTAssertEqual(bulkURL.path, "/api/games")
+        XCTAssertEqual(Set(bulkItems?.map(\.name) ?? []), Set(["page", "page_size", "key"]))
+        XCTAssertEqual(bulkItems?.first { $0.name == "page" }?.value, "3")
+        XCTAssertNil(CatalogURLProtocol.request?.httpBody)
         for status in [401, 403, 429, 500] {
             CatalogURLProtocol.status = status
             do {

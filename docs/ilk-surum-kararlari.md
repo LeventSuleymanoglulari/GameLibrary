@@ -58,6 +58,15 @@ yenileme yapılmaz. Aşama ve tamamlanma ölçütü
 [yol haritasının 6. aşamasında](../ROADMAP.md#6-otomatik-katalog-içe-aktarma)
 tanımlanmıştır.
 
+6. aşama uygulaması her çalıştırmayı 100 sayfa ile sınırlar; sayfalar arasında
+bir saniye bekler. Kalan hesap kotası bilinmez. Hata, kullanıcı durdurması veya
+paneli gizleme sonrasında otomatik yeniden başlatma olmaz. Sayfa işaretçisi
+oyunlarla aynı işlemde saklanır; uygulama yeniden açıldıktan sonra **Sürdür**
+komutu gerekir. **Baştan Tara** kayıt silmez. Katalog sayfalarının zamanla
+değişebilmesi nedeniyle bu işaretçi sabit bir katalog görüntüsü değildir.
+Toplu komut, aynı adlı ayrı katalog kayıtlarının eklenmesine onaydır; elle
+kayıtlar birleştirilmez ve tek oyun eklemedeki ad onayı değişmez.
+
 ## İçe aktarma ve elle ekleme sözleşmesi
 
 1. Kullanıcı oyun adını arar. Sonuçlarda ad, varsa çıkış tarihi ve platformlar

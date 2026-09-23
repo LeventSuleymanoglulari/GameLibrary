@@ -74,6 +74,29 @@ ile [1.0 önizleme sürüm notlarını](docs/surum-notlari-1.0-onizleme.md) okuy
 Aynı RAWG kimliği mevcut kaydı açar. Aynı adlı farklı bir oyun için ayrı kayıt
 onayı gerekir. Yerel kayıt başarısızsa form açık kalır ve yeniden denenebilir.
 
+## Otomatik katalog aktarımı
+
+**Oyun Ekle** panelinde kendi RAWG anahtarınızı ayarlayın; panelin altındaki
+**Kataloğu Aktar** düğmesiyle sayfa sayfa aktarımı başlatın. Bu komut her oyun
+için ayrı onay istemez. Aynı adlı elle kayıtlar ayrı kalır; aynı RAWG kimliği
+çoğaltılmaz ve mevcut ad/durum/puan değiştirilmez. Yeni oyunlar durumsuz ve
+puansız olarak **Tüm Oyunlar**'a eklenir. Topluluk puanı aktarılmaz.
+
+Her çalıştırma en fazla 100 sayfa (sayfa başına 20 kayıt) ister ve sayfalar
+arasında bir saniye bekler. Bu sınır hesabınızın kalan aylık kotasını bildiği
+anlamına gelmez. Anahtar, kota, ağ veya kayıt hatasında otomatik tekrar yoktur.
+**Aktarımı Durdur** veya paneli gizleme işlemi devam eden aktarımı iptal eder.
+**Aktarımı Sürdür**, uygulamayı yeniden açtıktan sonra da son kaydedilen
+sayfanın ardından devam eder. Yarım kalan sayfa tekrar istenir. Bitmiş bir
+taramayı **Baştan Tara** ile tekrarlamak mevcut kayıtları silmez.
+
+Elle ekleme aktarım sırasında da kullanılabilir. Anahtar yalnızca Keychain'de,
+sayfa ilerlemesi ise oyunlarla aynı SwiftData deposunda tutulur. RAWG'nin
+zorunlu HTTPS `key` parametresi dışında kişisel koleksiyon bilgisi gönderilmez.
+Katalog zamanla değiştiğinden sayfa numarası bir katalog anlık görüntüsü
+garantisi değildir. [6. aşama doğrulama kaydı](docs/asama-6-dogrulama.md)
+testleri, şema değişikliğini ve kabul sınırlarını açıklar.
+
 ## Proje belgeleri
 
 - [Yol haritası](ROADMAP.md) ilk sürüme kadar izlenecek aşamaları ve

@@ -287,7 +287,8 @@ struct ContentView: View {
                                 pane = .inspecting
                             }
                         },
-                        onClose: closeComposer
+                        onClose: closeComposer,
+                        onBulkStart: { selectedTab = .allGames }
                     )
                 } else if pane == .inspecting, let selectedGame {
                     GameDetailSheet(game: selectedGame, onClose: closeDetail)
@@ -530,7 +531,10 @@ private struct GameDetailSheet: View {
 private struct AddGameSheet: View {
     let onOpen: (Game) -> Void
     let onClose: () -> Void
+    let onBulkStart: () -> Void
     @Environment(\.modelContext) private var modelContext
+    @Environment(CatalogImporter.self) private var importer
+    @Query private var importProgress: [CatalogImportProgress]
     @Environment(\.colorScheme) private var colorScheme
     @State private var search = CatalogSearchSession()
     @State private var searchText = ""
@@ -567,7 +571,7 @@ private struct AddGameSheet: View {
                             .onSubmit { startSearch() }
                         HStack {
                             Button("Ara") { startSearch() }
-                                .disabled(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || search.isSearching)
+                                .disabled(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || search.isSearching || importer.isRunning)
                                 .buttonStyle(.borderedProminent)
                             Button("API Anahtarını Ayarla") { isShowingKeyEditor = true }
                             Link("RAWG kaynağı", destination: RAWGService.attributionURL)
@@ -582,7 +586,7 @@ private struct AddGameSheet: View {
                         if let message = search.errorMessage {
                             Text(message).foregroundStyle(Color(red: 0.72, green: 0.22, blue: 0.16))
                             Button("Tekrar dene") { requestTask = Task { await search.retry(apiKey: apiKey) } }
-                                .disabled(search.isSearching)
+                                .disabled(search.isSearching || importer.isRunning)
                         }
                         if search.hasSearched, search.results.isEmpty, !search.isSearching, search.errorMessage == nil {
                             Text("Sonuç bulunamadı. Aradığınız adla elle ekleyebilirsiniz.")
@@ -618,7 +622,7 @@ private struct AddGameSheet: View {
                         }
                         if search.hasNextPage {
                             Button("Sonraki 20 sonucu yükle") { requestTask = Task { await search.loadNext(apiKey: apiKey) } }
-                                .disabled(search.isSearching)
+                                .disabled(search.isSearching || importer.isRunning)
                         }
                     }
                 }
@@ -646,6 +650,46 @@ private struct AddGameSheet: View {
                         .foregroundStyle(ink.secondary)
                     Button(manualEntryOnly ? "Katalogda ara" : "Yalnızca elle ekle") {
                         manualEntryOnly.toggle()
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Otomatik katalog aktarımı").font(.headline)
+                    Text("Tek komutla sayfa sayfa aktarır. Her çalıştırma en fazla 100 istek yapar; kota hatasında durur. Kişisel durumlar ve puanlar değişmez. Elle kayıtlarla aynı adlı oyunlar ayrı eklenir. Paneli gizlemek aktarımı durdurur.")
+                        .font(.footnote)
+                        .foregroundStyle(ink.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Link("RAWG kaynağı", destination: RAWGService.attributionURL)
+                    if let progress = importProgress.first {
+                        Text("\(progress.importedCount) oyun aktarıldı · Sıradaki sayfa: \(progress.nextPage)")
+                            .font(.caption)
+                            .accessibilityIdentifier("bulkProgress")
+                    }
+                    if importer.isRunning {
+                        ProgressView("Katalog aktarılıyor…")
+                        Button("Aktarımı Durdur") { importer.stop() }
+                            .accessibilityIdentifier("bulkStop")
+                    } else if importProgress.first?.isComplete != true {
+                        Button(importProgress.first == nil ? "Kataloğu Aktar" : "Aktarımı Sürdür") {
+                            requestTask?.cancel()
+                            onBulkStart()
+                            importer.start(container: modelContext.container, apiKey: apiKey)
+                        }
+                        .accessibilityIdentifier("bulkStart")
+                        .disabled(search.isSearching)
+                    }
+                    if let message = importer.message, importProgress.first?.isComplete != true { Text(message).font(.footnote) }
+                    if let error = importer.errorMessage {
+                        Text(error).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true)
+                    }
+                    if importProgress.first?.isComplete == true && !importer.isRunning {
+                        Text("Katalog aktarımı tamamlandı.").font(.footnote)
+                        Button("Baştan Tara") {
+                            onBulkStart()
+                            importer.start(container: modelContext.container, apiKey: apiKey, restart: true)
+                        }
+                        .disabled(search.isSearching)
+                        .accessibilityIdentifier("bulkRestart")
                     }
                 }
 
@@ -681,14 +725,14 @@ private struct AddGameSheet: View {
             do { apiKey = try KeychainStore.loadRAWGKey() ?? "" }
             catch { errorMessage = "Kaydedilmiş API anahtarı okunamadı. Elle ekleme kullanılabilir." }
         }
-        .onDisappear { requestTask?.cancel() }
+        .onDisappear { requestTask?.cancel(); importer.stop() }
         .onChange(of: manualTitle) { pendingDraft = nil; nameMatches = [] }
         .onChange(of: selectedResult) { pendingDraft = nil; nameMatches = [] }
         .onChange(of: searchText) { pendingDraft = nil; nameMatches = [] }
     }
 
     private func startSearch() {
-        guard !search.isSearching else { return }
+        guard !search.isSearching, !importer.isRunning else { return }
         manualTitle = searchText.trimmingCharacters(in: .whitespacesAndNewlines)
         selectedResult = nil
         let query = searchText
@@ -753,4 +797,7 @@ private struct APIKeySheet: View {
     }
 }
 
-#Preview { ContentView().modelContainer(for: Game.self, inMemory: true) }
+#Preview {
+    ContentView().environment(CatalogImporter())
+        .modelContainer(for: [Game.self, CatalogImportProgress.self], inMemory: true)
+}

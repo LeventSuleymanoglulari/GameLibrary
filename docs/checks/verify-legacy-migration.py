@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[2]
 BASELINE = "e98c9b6636e172f178dcc3c42839270a2bc9473b"
 MODEL = "Game library/Game library/Game.swift"
 SERVICE = "Game library/Game library/RAWGService.swift"
+PROGRESS = "Game library/Game library/CatalogImportProgress.swift"
 
 COMMON = r'''
 import Foundation
@@ -37,7 +38,7 @@ BEFORE = COMMON + r'''
 }
 '''
 
-AFTER = COMMON + r'''
+AFTER = COMMON.replace("for: Game.self,", "for: Game.self, CatalogImportProgress.self,") + r'''
         let games = try context.fetch(FetchDescriptor<Game>())
         precondition(games.count == 1, "Kayıt sayısı değişti")
         let game = games[0]
@@ -52,6 +53,8 @@ AFTER = COMMON + r'''
         precondition(game.sourceURL == nil, "Kaynak bağlantısı boş değil")
         precondition(game.releaseDate == nil, "Çıkış tarihi boş değil")
         precondition(!game.isPlayed && !game.isCompleted && game.rating == nil, "Yeni kişisel alanlar boş değil")
+        let progressCount = try context.fetchCount(FetchDescriptor<CatalogImportProgress>())
+        precondition(progressCount == 0, "Aktarım kendiliğinden başlamamalı")
         print("PASS: Kalıcı kimlik, ad, tarih ve üç durum korundu; yeni kaynak ve kişisel alanlar doğru.")
     }
 }
@@ -82,7 +85,7 @@ def main():
         run(*compiler, str(old_model), str(runner))
         run(str(executable), str(store), str(identity))
         runner.write_text(AFTER, encoding="utf-8")
-        run(*compiler, str(ROOT / MODEL), str(ROOT / SERVICE), str(runner))
+        run(*compiler, str(ROOT / MODEL), str(ROOT / SERVICE), str(ROOT / PROGRESS), str(runner))
         run(str(executable), str(store), str(identity))
 
 
