@@ -54,7 +54,7 @@ def main():
                 "-destination", "generic/platform=macOS", "-derivedDataPath", work / "build",
                 "ARCHS=arm64 x86_64", "ONLY_ACTIVE_ARCH=NO", "CODE_SIGN_IDENTITY=-",
                 "CODE_SIGN_STYLE=Manual", "DEVELOPMENT_TEAM=", "ENABLE_HARDENED_RUNTIME=YES",
-                "CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO",
+                "CODE_SIGN_INJECT_BASE_ENTITLEMENTS=NO", "ENABLE_CODE_COVERAGE=NO",
                 f"CODE_SIGN_ENTITLEMENTS={ROOT / 'scripts/preview.entitlements'}",
                 "build", stdout=log, stderr=subprocess.STDOUT)
         stage = work / "stage"
