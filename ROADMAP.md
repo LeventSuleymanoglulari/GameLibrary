@@ -126,16 +126,26 @@ kapıları içerir.
 sürüme dahildir; 5. aşamadaki kurulabilir paket bu aşama bitmeden tamamlanmış
 sayılmaz.
 
-- [ ] Kullanıcının başlattığı tek komutla RAWG kataloğunu sayfa sayfa yerel kütüphaneye aktar; her oyun için ayrı seçim onayı isteme.
-- [ ] Aktarılan oyunları Tüm Oyunlar'da göster. Kişisel durum ve puan boş kalsın; API'nin topluluk puanı bu alanları doldurmasın.
-- [ ] Aynı RAWG kimliğini yeniden aktarırken kayıt çoğaltma; mevcut durum ve puanı koru. Elle eklenen kayıtları otomatik birleştirme.
-- [ ] Ücretsiz plan kotasında, ağ hatasında veya anahtar hatasında aktarımı durdur. Otomatik istek döngüsü başlatma. Kaldığı sayfadan sürdürmeyi sağla.
-- [ ] Aktarılan her kayıtta RAWG kaynak bağlantısı bulunsun. Anahtar ve kişisel veriler isteklerde ve günlüklerde yer almasın.
-- [ ] Elle eklemeyi bu aşamada da kullanılabilir tut.
+- [x] Kullanıcının başlattığı tek komutla RAWG kataloğunu sayfa sayfa yerel kütüphaneye aktar; her oyun için ayrı seçim onayı isteme.
+- [x] Aktarılan oyunları Tüm Oyunlar'da göster. Kişisel durum ve puan boş kalsın; API'nin topluluk puanı bu alanları doldurmasın.
+- [x] Aynı RAWG kimliğini yeniden aktarırken kayıt çoğaltma; mevcut durum ve puanı koru. Elle eklenen kayıtları otomatik birleştirme.
+- [x] Ücretsiz plan kotasında, ağ hatasında veya anahtar hatasında aktarımı durdur. Otomatik istek döngüsü başlatma. Kaldığı sayfadan sürdürmeyi sağla.
+- [x] Aktarılan her kayıtta RAWG kaynak bağlantısı bulunsun. Anahtar yalnızca RAWG kimlik doğrulaması için kullanılsın, günlüklerde yer almasın; kişisel koleksiyon verileri isteklerde ve günlüklerde yer almasın.
+- [x] Elle eklemeyi bu aşamada da kullanılabilir tut.
 
 **Tamamlanma ölçütü:** Kullanıcı komutuyla katalog oyunları yerel listeye geçer
 ve Tüm Oyunlar'da görünür. Kota veya bağlantı kesilince aktarım durur ve
 sürdürülebilir. K16'daki kimlik kuralları toplu aktarımda da geçer.
+
+Uygulama ve fixture tabanlı kabul tamamlandı: 21 birim, 9 arayüz testi;
+eski/güncel depo geçişi, Release ve evrensel paket kontrolleri geçti.
+Çalıştırma başına 100 sayfa sınırı ve kullanıcı komutuyla sürdürme vardır;
+bu sınır kalan aylık kotayı ölçmez. Kaynak API zorunlu HTTPS `key` parametresi
+istediğinden, önceki "anahtar istekte yer almasın" ifadesi kimlik doğrulama ile
+çelişmeyecek biçimde netleştirildi. Anahtar ilerleme kaydına veya günlüğe yazılmaz.
+Canlı RAWG, gerçek kota, tam erişilebilirlik ve kurulu Release kabulü tamamlandı
+sayılmaz; 5. aşamadaki açık kapılar korunur.
+[Kanıt ve ekran görüntüsü](docs/asama-6-dogrulama.md).
 
 ## İlk sürüm dışında
 

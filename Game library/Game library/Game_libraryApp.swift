@@ -10,6 +10,7 @@ import SwiftData
 
 @main
 struct Game_libraryApp: App {
+    @State private var catalogImporter = CatalogImporter()
     static var usesTestStorage: Bool {
         #if DEBUG
         ProcessInfo.processInfo.arguments.contains("--ui-testing")
@@ -22,6 +23,7 @@ struct Game_libraryApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Game.self,
+            CatalogImportProgress.self,
         ])
         var modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: Game_libraryApp.usesTestStorage)
         #if DEBUG
@@ -45,6 +47,7 @@ struct Game_libraryApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(catalogImporter)
         }
         .modelContainer(sharedModelContainer)
     }

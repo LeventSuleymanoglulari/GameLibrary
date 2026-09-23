@@ -28,7 +28,7 @@ A local macOS window. The library works offline after a game is saved. Catalog s
 
 - macOS 26 or later. SwiftUI and SwiftData. No cloud sync and no account.
 - Four filters: Tüm Oyunlar, Kütüphanem, Wishlist, Oynanacak. Oynandı, Bitti, and rating are not filters.
-- Add by RAWG search or by manual title. Empty titles are rejected. The same RAWG id opens the existing record. The same title asks before creating another game.
+- Add by RAWG search, explicit resumable catalog import, or manual title. Empty titles are rejected. The same RAWG id opens the existing record in single import and is skipped in bulk import. Single import asks before adding a same-name game; the explicit bulk command adds separate catalog records without merging manual entries.
 - Rating is an optional integer from 1 to 10.
 - UI copy stays Turkish. Keyboard access and visible focus stay.
 - Cover art is out of scope.

@@ -74,12 +74,22 @@ struct RAWGService {
     }
 
     func search(query: String, page: Int, apiKey: String) async throws -> RAWGSearchResponse {
+        try await games(query: query, page: page, apiKey: apiKey)
+    }
+
+    func catalogPage(_ page: Int, apiKey: String) async throws -> RAWGSearchResponse {
+        try await games(query: nil, page: page, apiKey: apiKey)
+    }
+
+    private func games(query: String?, page: Int, apiKey: String) async throws -> RAWGSearchResponse {
         guard !apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { throw RAWGServiceError.missingKey }
+        guard page > 0 else { throw RAWGServiceError.invalidResponse }
         var components = URLComponents(string: "https://api.rawg.io/api/games")!
         components.queryItems = [
-            URLQueryItem(name: "search", value: query), URLQueryItem(name: "page", value: String(page)),
+            URLQueryItem(name: "page", value: String(page)),
             URLQueryItem(name: "page_size", value: "20"), URLQueryItem(name: "key", value: apiKey)
         ]
+        if let query { components.queryItems?.append(URLQueryItem(name: "search", value: query)) }
         var request = URLRequest(url: components.url!)
         request.timeoutInterval = 30
         let data: Data
