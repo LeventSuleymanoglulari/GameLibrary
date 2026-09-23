@@ -29,8 +29,12 @@ def verify_app(app):
     executable = app / "Contents/MacOS" / info["CFBundleExecutable"]
     architectures = run("lipo", "-archs", executable, capture_output=True, text=True).stdout.split()
     require(set(architectures) == {"arm64", "x86_64"}, f"Eksik mimari: {architectures}")
+    symbols = run("nm", executable, capture_output=True, text=True).stdout
+    require("___llvm_profile_begin_counters" not in symbols, "Release ikili kod kapsamı aracı içeriyor")
     run("codesign", "--verify", "--deep", "--strict", app)
-    entitlements = plistlib.loads(run("codesign", "-d", "--entitlements", ":-", app, capture_output=True).stdout)
+    entitlements = plistlib.loads(
+        run("codesign", "-d", "--entitlements", "-", "--xml", app, capture_output=True).stdout
+    )
     require(entitlements.get("com.apple.security.app-sandbox") is True, "Sandbox eksik")
     require(entitlements.get("com.apple.security.network.client") is True, "Ağ izni eksik")
     require(not entitlements.get("com.apple.security.get-task-allow", False), "Debugger yetkisi açık")
