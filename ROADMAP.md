@@ -100,16 +100,23 @@ canlı RAWG kabulüyle birlikte dağıtım öncesinde yapılmalıdır.
 
 Ön koşul: 6. aşamadaki otomatik katalog içe aktarmanın tamamlanması.
 
-- [ ] Uygulamayı seçilen işletim sistemi için kurulabilir paket haline getir.
-- [ ] Paketleme, kurulum ve çalıştırma adımlarını README'de belgele.
-- [ ] Dağıtım öncesi RAWG ücretsiz kullanım koşullarını ve atıf bağlantılarını yeniden kontrol et.
+- [x] Uygulamayı seçilen işletim sistemi için yerel önizleme DMG/ZIP paketi haline getir.
+- [x] Paketleme, kurulum ve çalıştırma adımlarını README'de belgele.
+- [x] Dağıtım öncesi RAWG ücretsiz kullanım koşullarını ve atıf bağlantılarını yeniden kontrol et.
 - [ ] Kurulan uygulamada geçerli K1–K20 senaryolarını doğrula; test ve
   varsa lint komutlarını çalıştır.
-- [ ] Doğrulanan uygulama sürümünü, işletim sistemini, sonuçları ve bilinen
+- [x] Doğrulanan paket sürümünü, işletim sistemini, sonuçları ve bilinen
   sınırlamaları sürüm notlarına kaydet.
 
 **Tamamlanma ölçütü:** Uygulama hedef sistemde kurulup açılır; kabul
 senaryoları geçer ve ilk sürümün kullanım adımları belgelenmiştir.
+
+Paketleme altyapısı hazırdır; **genel dağıtım ve aşamanın tam kabulü bekliyor**.
+Yerel önizleme ad-hoc imzalıdır, notarize edilmemiştir. Phase 6, kurulu Release
+K1–K20 kabulü, canlı RAWG ve erişilebilirlik kontrolleri tamamlanmadan ilk sürüm
+tamamlandı sayılmaz. 23 Eylül koşusunda 13 birim testi geçti; UI otomasyon
+başlatması zaman aşımına uğradı. [Kurulum](docs/kurulum-macos.md) ve
+[sürüm notları](docs/surum-notlari-1.0-onizleme.md) kanıt ve açık kapıları içerir.
 
 ## 6. Otomatik katalog içe aktarma
 
