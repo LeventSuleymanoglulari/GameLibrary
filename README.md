@@ -49,7 +49,19 @@ SwiftData depoları, yerel katalog yanıtları ve ayrı bir Keychain hizmetindek
 sentetik anahtar kullanılır. Keychain kontrolü sonunda test anahtarını siler.
 Arayüzde yeniden açılış testi UUID ile ayrılmış geçici bir disk deposu kullanır.
 
-## Oyun ekle
+## macOS önizleme paketi
+
+```sh
+python3 scripts/package-macos.py
+```
+
+Release DMG/ZIP ve bütünlük manifesti `dist/preview-<UTC zamanı>/` altında
+üretilir. Paket macOS 26+ için arm64/x86_64 içerir; ad-hoc imzalıdır, notarize
+edilmiş genel dağıtım değildir. [Kurulum ve paketleme](docs/kurulum-macos.md)
+ile [1.0 önizleme sürüm notlarını](docs/surum-notlari-1.0-onizleme.md) okuyun.
+6. aşama ve kurulu Release kabulü tamamlanmadan ilk sürüm bitmiş sayılmaz.
+
+## Oyun ekleme adımları
 
 1. Araç çubuğundan **Oyun Ekle**'yi açın. Katalog kullanmak için kendi RAWG
    anahtarınızı ayarlardan kaydedin. Anahtar yalnızca Keychain'de saklanır.
