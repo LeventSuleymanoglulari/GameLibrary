@@ -26,4 +26,19 @@ final class RAWGKeyResolverTests: XCTestCase {
             ""
         )
     }
+
+    func testUnsubstitutedBuildTokenIsNotAKey() {
+        XCTAssertEqual(
+            RAWGKeyResolver.resolve(keychainKey: nil, buildSecret: "$(RAWG_API_KEY)"),
+            ""
+        )
+        XCTAssertEqual(
+            RAWGKeyResolver.resolve(keychainKey: "  ", buildSecret: " $(RAWG_API_KEY) "),
+            ""
+        )
+        XCTAssertEqual(
+            RAWGKeyResolver.resolve(keychainKey: "stored", buildSecret: "$(RAWG_API_KEY)"),
+            "stored"
+        )
+    }
 }

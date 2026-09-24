@@ -8,7 +8,7 @@
 
 **Tech Stack:** Swift 6, SwiftUI, XCTest, Xcode 27, macOS 26, xcconfig, generated Info.plist.
 
-**This pull request:** The plan only. Do not implement the tasks in the pull request that adds this file.
+**This pull request:** Implementation of the plan. The plan-only draft landed separately.
 
 ---
 
