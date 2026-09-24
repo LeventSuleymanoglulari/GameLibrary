@@ -104,4 +104,53 @@ import SwiftData
         XCTAssertTrue(imported.isInLibrary && imported.isPlayed && imported.isCompleted)
         XCTAssertEqual(games.first { $0.source == "manual" }?.title, "Manual")
     }
+
+    func testDestroyRemovesSavedGameAndAllowsFreshReadd() throws {
+        let container = try ModelContainer(for: Game.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = ModelContext(container)
+        let catalog = try JSONDecoder().decode(RAWGGame.self, from: Data(#"{"id":42,"name":"Portal","slug":"portal","released":"2007-10-10","platforms":[{"platform":{"name":"PC"}}]}"#.utf8))
+        guard case .added(let game) = try Game.add(GameDraft.rawg(catalog), to: context) else {
+            return XCTFail()
+        }
+        game.rating = 9
+        game.isInLibrary = true
+        try context.save()
+
+        XCTAssertEqual(Game.destroy(game, from: context), .destroyed)
+        XCTAssertTrue(try context.fetch(FetchDescriptor<Game>()).isEmpty)
+
+        guard case .added(let readded) = try Game.add(GameDraft.rawg(catalog), to: context) else {
+            return XCTFail()
+        }
+        XCTAssertNil(readded.rating)
+        XCTAssertFalse(readded.isInLibrary)
+    }
+
+    func testDestroySaveFailureLeavesGameFetchable() throws {
+        let container = try ModelContainer(for: Game.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = ModelContext(container)
+        let game = Game(title: "Keep Me")
+        context.insert(game)
+        try context.save()
+
+        let fail: () throws -> Void = { throw CocoaError(.fileWriteUnknown) }
+        XCTAssertEqual(
+            Game.destroy(game, from: context, save: fail),
+            .saveFailed(message: GamePresentation.saveFailedMessage)
+        )
+        let fetched = try XCTUnwrap(context.fetch(FetchDescriptor<Game>()).first)
+        XCTAssertEqual(fetched.title, "Keep Me")
+    }
+
+    func testDestroyIsIdempotentAfterSuccess() throws {
+        let container = try ModelContainer(for: Game.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = ModelContext(container)
+        let game = Game(title: "Twice")
+        context.insert(game)
+        try context.save()
+
+        XCTAssertEqual(Game.destroy(game, from: context), .destroyed)
+        XCTAssertEqual(Game.destroy(game, from: context), .destroyed)
+        XCTAssertTrue(try context.fetch(FetchDescriptor<Game>()).isEmpty)
+    }
 }
