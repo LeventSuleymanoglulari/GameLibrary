@@ -313,6 +313,32 @@ final class Game_libraryUITests: XCTestCase {
         XCTAssertFalse(emptyCopy.contains("sonraki aşama"))
     }
 
+    @MainActor func testKeyboardCatalogSelectionReachesSourceLink() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing", "--ui-testing-catalog"]
+        launch(app)
+        app.typeKey("n", modifierFlags: .command)
+        let search = app.textFields["searchTitle"]
+        XCTAssertTrue(search.waitForExistence(timeout: 5), app.debugDescription)
+        search.click()
+        search.typeText("Katalog\n")
+        let select = app.buttons["select-1"]
+        XCTAssertTrue(select.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(select.label, "Seç")
+        select.click()
+        let confirm = app.buttons["Seçilen Oyunu Ekle"]
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5), app.debugDescription)
+        app.typeKey(.return, modifierFlags: [])
+        let link = app.links["gameSourceLink"]
+        XCTAssertTrue(link.waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertEqual(link.label, "RAWG kaynağında görüntüle")
+        let card = app.buttons["gameCard-Katalog Oyunu 1"]
+        XCTAssertTrue(card.waitForExistence(timeout: 5))
+        XCTAssertTrue((card.value as? String ?? "").contains("RAWG kataloğundan eklendi"))
+        XCTAssertFalse((card.value as? String ?? "").contains("Puan"))
+    }
+
     @MainActor func testCommandShortcutSelectsLibraryTab() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--ui-testing"]

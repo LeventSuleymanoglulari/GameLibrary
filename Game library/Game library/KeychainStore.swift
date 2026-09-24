@@ -2,7 +2,9 @@ import Foundation
 import Security
 
 enum KeychainStore {
-    private static let service = "com.leventsuleymanoglulari.game-library"
+    private static var service: String {
+        AcceptanceSession.current?.keychainService ?? "com.leventsuleymanoglulari.game-library"
+    }
     private static let account = "rawg-api-key"
 
     #if DEBUG

@@ -32,7 +32,10 @@ enum GamePresentation {
     }
 
     static func accessibilityValue(for game: Game) -> String {
-        (statusLabels(for: game) + (ratingChip(game.rating).map { [$0] } ?? [])).joined(separator: ", ")
+        var parts = statusLabels(for: game)
+        if let chip = ratingChip(game.rating) { parts.append(chip) }
+        if game.source == "rawg" { parts.append("RAWG kataloğundan eklendi") }
+        return parts.joined(separator: ", ")
     }
 
     static func message(for error: LibraryInputError) -> String {

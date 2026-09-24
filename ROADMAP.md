@@ -145,6 +145,10 @@ istediğinden, önceki "anahtar istekte yer almasın" ifadesi kimlik doğrulama 
 çelişmeyecek biçimde netleştirildi. Anahtar ilerleme kaydına veya günlüğe yazılmaz.
 Canlı RAWG, gerçek kota, tam erişilebilirlik ve kurulu Release kabulü tamamlandı
 sayılmaz; 5. aşamadaki açık kapılar korunur.
+23 Eylül denemesi anahtarsız canlı isteği, klavye ve erişilebilirlik etiketlerini
+ve paketlenmiş uygulamanın ayrı geçici depoyla açılışını kaydetti. VoiceOver
+konuşması, gerçek kota ve kurulu penceredeki K1–K20 turu hâlâ açık.
+[Kabul kapıları](docs/kabul-kapilari.md).
 [Kanıt ve ekran görüntüsü](docs/asama-6-dogrulama.md).
 
 ## İlk sürüm dışında
