@@ -336,19 +336,49 @@ struct ContentView: View {
     }
 }
 
+private struct CatalogCover: View {
+    let urlString: String?
+    let width: CGFloat
+    let ink: ShelfInk
+
+    private var url: URL? {
+        CatalogArtwork.parse(urlString)?.url
+    }
+
+    var body: some View {
+        if let url {
+            AsyncImage(url: url) { phase in
+                switch phase {
+                case .success(let image):
+                    image.resizable().scaledToFill()
+                case .failure:
+                    ink.spine
+                default:
+                    ink.spine.opacity(0.45)
+                }
+            }
+            .frame(width: width, height: width * 1.35)
+            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .accessibilityHidden(true)
+        }
+    }
+}
+
 private struct GameCard: View {
     let game: Game
     let ink: ShelfInk
     var emphasized: Bool = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(game.title)
-                .font(.headline)
-                .foregroundStyle(emphasized ? ink.lamp : ink.ink)
-                .multilineTextAlignment(.leading)
-            let labels = GamePresentation.statusLabels(for: game)
-            if !labels.isEmpty || game.rating != nil {
+        HStack(alignment: .top, spacing: 12) {
+            CatalogCover(urlString: game.artworkURL, width: 44, ink: ink)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(game.title)
+                    .font(.headline)
+                    .foregroundStyle(emphasized ? ink.lamp : ink.ink)
+                    .multilineTextAlignment(.leading)
+                let labels = GamePresentation.statusLabels(for: game)
+                if !labels.isEmpty || game.rating != nil {
                 HStack(spacing: 6) {
                     ForEach(labels, id: \.self) { label in
                         Text(label)
@@ -372,6 +402,7 @@ private struct GameCard: View {
                 Text("RAWG kataloğundan eklendi")
                     .font(.subheadline)
                     .foregroundStyle(ink.secondary)
+            }
             }
         }
         .accessibilityElement(children: .ignore)
@@ -400,6 +431,7 @@ private struct GameDetailSheet: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                CatalogCover(urlString: game.artworkURL, width: 168, ink: ink)
                 HStack(alignment: .firstTextBaseline) {
                     Text(game.title)
                         .font(.title2.weight(.semibold))
@@ -611,6 +643,7 @@ private struct AddGameSheet: View {
                             VStack(alignment: .leading, spacing: 10) {
                                 ForEach(search.results) { result in
                                     HStack(alignment: .top, spacing: 12) {
+                                        CatalogCover(urlString: result.artwork?.url.absoluteString, width: 44, ink: ink)
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text(result.name).font(.headline)
                                             if let released = result.released { Text("Çıkış: \(released)").font(.caption) }

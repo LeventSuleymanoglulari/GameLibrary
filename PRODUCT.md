@@ -31,7 +31,7 @@ A local macOS window. The library works offline after a game is saved. Catalog s
 - Add by RAWG search, explicit resumable catalog import, or manual title. Empty titles are rejected. The same RAWG id opens the existing record in single import and is skipped in bulk import. Single import asks before adding a same-name game; the explicit bulk command adds separate catalog records without merging manual entries.
 - Rating is an optional integer from 1 to 10.
 - UI copy stays Turkish. Keyboard access and visible focus stay.
-- Cover art is out of scope.
+- Imported games show a RAWG cover from `background_image` when the URL is https on media.rawg.io. Manual games have no cover. Covers are not prefetched for every catalog page.
 
 ## Brand Commitments
 

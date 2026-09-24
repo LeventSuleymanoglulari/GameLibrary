@@ -4,6 +4,38 @@ import Synchronization
 @testable import Game_library
 
 @MainActor final class Game_libraryTests: XCTestCase {
+    func testCatalogArtworkKeepsOnlyRawgMediaURLs() throws {
+        let kept = try JSONDecoder().decode(
+            RAWGGame.self,
+            from: Data(#"{"id":7,"name":"Hades","background_image":"https://media.rawg.io/media/games/hades.jpg"}"#.utf8)
+        )
+        XCTAssertEqual(kept.artwork?.url.absoluteString, "https://media.rawg.io/media/games/hades.jpg")
+        for raw in [
+            "http://media.rawg.io/media/games/hades.jpg",
+            "https://user:pass@media.rawg.io/hades.jpg",
+            "https://evil.example/hades.jpg",
+            "not a url",
+        ] {
+            let game = try JSONDecoder().decode(
+                RAWGGame.self,
+                from: JSONSerialization.data(withJSONObject: ["id": 7, "name": "Hades", "background_image": raw])
+            )
+            XCTAssertNil(game.artwork, raw)
+        }
+        let missing = try catalog()
+        XCTAssertNil(missing.artwork)
+        let container = try ModelContainer(for: Game.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = ModelContext(container)
+        guard case .added(let saved) = try Game.add(GameDraft.rawg(kept), to: context) else {
+            return XCTFail("Expected insert")
+        }
+        XCTAssertEqual(saved.artworkURL, "https://media.rawg.io/media/games/hades.jpg")
+        guard case .added(let manual) = try Game.add(try GameDraft.manual("Not"), to: context) else {
+            return XCTFail("Expected manual insert")
+        }
+        XCTAssertNil(manual.artworkURL)
+    }
+
     func testAcceptanceSessionStaysInTemporaryStorage() {
         XCTAssertNil(AcceptanceSession.parse(nil))
         XCTAssertNil(AcceptanceSession.parse("not-a-uuid"))
