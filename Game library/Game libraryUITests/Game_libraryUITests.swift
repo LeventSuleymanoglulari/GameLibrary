@@ -357,6 +357,34 @@ final class Game_libraryUITests: XCTestCase {
         }
     }
 
+    @MainActor func testDestroyRemovesManualGameFromShelf() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchEnvironment["GAME_LIBRARY_TEST_STORE_ID"] = UUID().uuidString
+        app.launchArguments = ["--ui-testing"]
+        launch(app)
+        app.buttons["Oyun Ekle"].click()
+        let title = app.textFields["manualTitle"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.click()
+        title.typeText("Silinecek Oyun")
+        app.buttons["Elle Ekle"].click()
+        let destroy = app.buttons["detailDestroy"]
+        let form = app.scrollViews.firstMatch
+        for _ in 0..<8 where !destroy.waitForExistence(timeout: 1) || !destroy.isHittable {
+            form.swipeUp()
+        }
+        XCTAssertTrue(destroy.waitForExistence(timeout: 5), app.debugDescription)
+        destroy.click()
+        let confirm = app.sheets.buttons["Sil"].firstMatch
+        XCTAssertTrue(confirm.waitForExistence(timeout: 5), app.debugDescription)
+        confirm.click()
+        XCTAssertTrue(
+            app.buttons["gameCard-Silinecek Oyun"].waitForNonExistence(timeout: 5),
+            app.debugDescription
+        )
+    }
+
     @MainActor private func isOff(_ element: XCUIElement) -> Bool {
         switch element.value {
         case let number as NSNumber: return number.intValue == 0

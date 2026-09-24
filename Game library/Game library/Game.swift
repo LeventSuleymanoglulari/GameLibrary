@@ -75,6 +75,11 @@ enum AddGameResult {
     case added(Game), existing(Game), sameName([Game])
 }
 
+enum DestroyOutcome: Equatable, Sendable {
+    case destroyed
+    case saveFailed(message: String)
+}
+
 extension Game {
     @MainActor static func add(
         _ draft: GameDraft, to context: ModelContext, allowSameName: Bool = false,
@@ -100,5 +105,24 @@ extension Game {
         }
         catch { context.delete(game); throw error }
         return .added(game)
+    }
+
+    @MainActor
+    static func destroy(
+        _ game: Game,
+        from context: ModelContext,
+        save: (() throws -> Void)? = nil
+    ) -> DestroyOutcome {
+        if game.isDeleted || game.modelContext == nil {
+            return .destroyed
+        }
+        context.delete(game)
+        do {
+            if let save { try save() } else { try context.save() }
+            return .destroyed
+        } catch {
+            context.rollback()
+            return .saveFailed(message: GamePresentation.saveFailedMessage)
+        }
     }
 }

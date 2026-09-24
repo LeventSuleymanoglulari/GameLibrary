@@ -11,7 +11,15 @@ enum GamePresentation {
     static let saveFailedMessage = "Değişiklik kaydedilemedi. Lütfen tekrar deneyin."
     static let detailDismissTitle = "Kapat"
     static let detailDismissIdentifier = "detailDismiss"
+    static let destroyActionTitle = "Sil"
+    static let destroyCancelTitle = "Vazgeç"
+    static let destroyActionIdentifier = "detailDestroy"
+    static let destroyConfirmMessage = "Bu oyun kütüphaneden silinecek. Bu işlem geri alınamaz."
     static let emptyFilteredTabDescription = "Bu sekmede henüz oyun yok. Bir oyunu açıp durumunu seçebilirsiniz."
+
+    static func destroyConfirmTitle(for gameTitle: String) -> String {
+        "\"\(gameTitle)\" silinsin mi?"
+    }
 
     static func statusLabels(for game: Game) -> [String] {
         [
