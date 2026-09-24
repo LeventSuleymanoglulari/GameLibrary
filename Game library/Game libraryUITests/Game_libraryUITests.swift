@@ -7,6 +7,23 @@ final class Game_libraryUITests: XCTestCase {
         XCTAssertTrue(app.windows.firstMatch.waitForExistence(timeout: 10), "Test window did not open")
     }
 
+    @MainActor func testTestLaunchIgnoresBuildKeyAndExplainsKeychainOverride() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing"]
+        launch(app)
+        app.buttons["Oyun Ekle"].click()
+        app.buttons["API Anahtarını Ayarla"].click()
+        let explanation = app.staticTexts.matching(NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", "derleme sırasında konan anahtarın önüne geçer", "derleme sırasında konan anahtarın önüne geçer")).firstMatch
+        XCTAssertTrue(explanation.waitForExistence(timeout: 5))
+        let screenshot = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        screenshot.name = "RAWG anahtar önceliği açıklaması"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+        app.buttons["Vazgeç"].click()
+        XCTAssertTrue(app.staticTexts["Katalog araması için RAWG API anahtarınızı ayarlayın. Elle ekleme her zaman kullanılabilir."].exists)
+    }
+
     @MainActor func testBulkImportStopsAtQuotaAndResumesAfterRelaunch() throws {
         continueAfterFailure = false
         let app = XCUIApplication()
