@@ -36,6 +36,20 @@ import Synchronization
         XCTAssertNil(manual.artworkURL)
     }
 
+    func testAcceptanceSessionStaysInTemporaryStorage() {
+        XCTAssertNil(AcceptanceSession.parse(nil))
+        XCTAssertNil(AcceptanceSession.parse("not-a-uuid"))
+        XCTAssertNil(AcceptanceSession.parse("../Library"))
+        let id = UUID()
+        let session = AcceptanceSession.parse(id.uuidString)
+        XCTAssertEqual(session?.id, id)
+        XCTAssertEqual(session?.storeURL.lastPathComponent, "game-library-acceptance-\(id.uuidString).store")
+        XCTAssertTrue(session?.storeURL.path.hasPrefix(FileManager.default.temporaryDirectory.path) == true)
+        XCTAssertNotEqual(session?.keychainService, "com.leventsuleymanoglulari.game-library")
+        let imported = Game(title: "Hades", source: "rawg", externalID: 7, sourceURL: "https://rawg.io/games/hades")
+        XCTAssertEqual(GamePresentation.accessibilityValue(for: imported), "RAWG kataloğundan eklendi")
+    }
+
     func testMalformedOptionalMetadataDoesNotDiscardGame() throws {
         let data = Data(#"{"id":42,"name":"Portal","released":12,"slug":[],"platforms":[{"platform":{"name":"PC"}},{"platform":null}]}"#.utf8)
         let game = try JSONDecoder().decode(RAWGGame.self, from: data)

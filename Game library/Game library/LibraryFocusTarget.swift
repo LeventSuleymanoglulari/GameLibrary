@@ -16,4 +16,7 @@ enum LibraryFocusTarget: Hashable {
     case dismissDetail
     case addManualTitle
     case addManualSubmit
+    case searchTitle
+    case selectResult(Int)
+    case confirmSelected
 }

@@ -143,6 +143,7 @@ struct ContentView: View {
             } label: {
                     Label("Oyun Ekle", systemImage: "plus")
                 }
+                .keyboardShortcut("n", modifiers: .command)
                 .accessibilityHint("RAWG kataloğunda arama veya elle oyun ekleme akışını açar.")
             }
         }
@@ -496,6 +497,8 @@ private struct GameDetailSheet: View {
                         }
                         if game.source == "rawg" {
                             Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL))
+                                .accessibilityIdentifier("gameSourceLink")
+                                .accessibilityHint("RAWG oyun sayfasını tarayıcıda açar.")
                         }
                     }
                 }
@@ -600,7 +603,20 @@ private struct AddGameSheet: View {
                         TextField("Aranacak oyun adı", text: $searchText)
                             .textFieldStyle(.roundedBorder)
                             .accessibilityIdentifier("searchTitle")
-                            .onSubmit { startSearch() }
+                            .focused($focus, equals: .searchTitle)
+                            .onAppear { focus = .searchTitle }
+                            .onSubmit {
+                                if let selectedResult {
+                                    confirmSelected(selectedResult)
+                                } else {
+                                    startSearch()
+                                }
+                            }
+                            .onKeyPress(phases: .down) { press in
+                                guard press.key == .tab, !press.modifiers.contains(.shift) else { return .ignored }
+                                focus = .addManualTitle
+                                return .handled
+                            }
                         HStack {
                             Button("Ara") { startSearch() }
                                 .disabled(searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || search.isSearching || importer.isRunning)
@@ -634,10 +650,16 @@ private struct AddGameSheet: View {
                                             if !result.platformNames.isEmpty {
                                                 Text(result.platformNames.joined(separator: ", ")).font(.caption).foregroundStyle(ink.secondary)
                                             }
-                                            Link("RAWG kaynağı", destination: result.sourceURL).font(.caption)
+                                            Link("RAWG kaynağı", destination: result.sourceURL)
+                                                .font(.caption)
+                                                .accessibilityIdentifier("resultSource-\(result.id)")
+                                                .accessibilityHint("\(result.name) için RAWG sayfası")
                                         }
                                         Spacer(minLength: 8)
                                         Button(selectedResult?.id == result.id ? "Seçildi" : "Seç") { selectedResult = result }
+                                            .accessibilityIdentifier("select-\(result.id)")
+                                            .accessibilityHint("\(result.name) sonucunu seç")
+                                            .focused($focus, equals: .selectResult(result.id))
                                     }
                                     .padding(.vertical, 8)
                                     .overlay(alignment: .bottom) {
@@ -647,11 +669,10 @@ private struct AddGameSheet: View {
                             }
                         }
                         if let selectedResult {
-                            Button("Seçilen Oyunu Ekle") {
-                                do { try add(GameDraft.rawg(selectedResult)) }
-                                catch { errorMessage = "Yerel kayıt tamamlanamadı. Seçiminiz korunuyor; tekrar deneyebilirsiniz." }
-                            }
+                            Button("Seçilen Oyunu Ekle") { confirmSelected(selectedResult) }
                             .buttonStyle(.borderedProminent)
+                            .focused($focus, equals: .confirmSelected)
+                            .keyboardShortcut(.defaultAction)
                         }
                         if search.hasNextPage {
                             Button("Sonraki 20 sonucu yükle") { requestTask = Task { await search.loadNext(apiKey: apiKey) } }
@@ -667,15 +688,8 @@ private struct AddGameSheet: View {
                         .textFieldStyle(.roundedBorder)
                         .accessibilityIdentifier("manualTitle")
                         .focused($focus, equals: .addManualTitle)
-                    Button("Elle Ekle") {
-                        switch GameMutation.manualDraft(from: manualTitle) {
-                        case .ok(let draft):
-                            do { try add(draft) }
-                            catch { errorMessage = "Yerel kayıt tamamlanamadı. Girdiğiniz ad korunuyor; tekrar deneyebilirsiniz." }
-                        case .rejected(let message):
-                            errorMessage = message
-                        }
-                    }
+                        .onSubmit { submitManual() }
+                    Button("Elle Ekle") { submitManual() }
                     .buttonStyle(.borderedProminent)
                     .focused($focus, equals: .addManualSubmit)
                     Text("Elle ekleme çevrimdışı da çalışır.")
@@ -751,6 +765,8 @@ private struct AddGameSheet: View {
             .padding(22)
             .frame(maxWidth: .infinity, alignment: .leading)
         }
+        .defaultFocus($focus, .searchTitle)
+        .onAppear { focus = .searchTitle }
         .popover(isPresented: $isShowingKeyEditor) {
             APIKeySheet { apiKey = $0 }
         }
@@ -760,8 +776,32 @@ private struct AddGameSheet: View {
         }
         .onDisappear { requestTask?.cancel(); importer.stop() }
         .onChange(of: manualTitle) { pendingDraft = nil; nameMatches = [] }
-        .onChange(of: selectedResult) { pendingDraft = nil; nameMatches = [] }
+        .onChange(of: selectedResult) { _, result in
+            pendingDraft = nil
+            nameMatches = []
+            if result != nil { focus = .confirmSelected }
+        }
         .onChange(of: searchText) { pendingDraft = nil; nameMatches = [] }
+        .onChange(of: search.results) { _, results in
+            if selectedResult == nil, let first = results.first {
+                focus = .selectResult(first.id)
+            }
+        }
+    }
+
+    private func submitManual() {
+        switch GameMutation.manualDraft(from: manualTitle) {
+        case .ok(let draft):
+            do { try add(draft) }
+            catch { errorMessage = "Yerel kayıt tamamlanamadı. Girdiğiniz ad korunuyor; tekrar deneyebilirsiniz." }
+        case .rejected(let message):
+            errorMessage = message
+        }
+    }
+
+    private func confirmSelected(_ game: RAWGGame) {
+        do { try add(GameDraft.rawg(game)) }
+        catch { errorMessage = "Yerel kayıt tamamlanamadı. Seçiminiz korunuyor; tekrar deneyebilirsiniz." }
     }
 
     private func startSearch() {

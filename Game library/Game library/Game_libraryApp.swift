@@ -25,17 +25,23 @@ struct Game_libraryApp: App {
             Game.self,
             CatalogImportProgress.self,
         ])
-        var modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: Game_libraryApp.usesTestStorage)
-        #if DEBUG
-        // Yalnızca UUID tabanlı geçici test deposu; kullanıcı deposuna yol kabul edilmez.
-        if Game_libraryApp.usesTestStorage,
-           let value = ProcessInfo.processInfo.environment["GAME_LIBRARY_TEST_STORE_ID"],
-           let identifier = UUID(uuidString: value) {
-            let url = FileManager.default.temporaryDirectory
-                .appendingPathComponent("game-library-ui-\(identifier.uuidString).store")
-            modelConfiguration = ModelConfiguration(schema: schema, url: url)
+        let modelConfiguration: ModelConfiguration
+        if Game_libraryApp.usesTestStorage {
+            var configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            #if DEBUG
+            if let value = ProcessInfo.processInfo.environment["GAME_LIBRARY_TEST_STORE_ID"],
+               let identifier = UUID(uuidString: value) {
+                let url = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("game-library-ui-\(identifier.uuidString).store")
+                configuration = ModelConfiguration(schema: schema, url: url)
+            }
+            #endif
+            modelConfiguration = configuration
+        } else if let session = AcceptanceSession.current {
+            modelConfiguration = ModelConfiguration(schema: schema, url: session.storeURL)
+        } else {
+            modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
         }
-        #endif
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
