@@ -13,6 +13,7 @@ enum LibraryFocusTarget: Hashable {
     case statusPlayed
     case statusCompleted
     case ratingMenu
+    case destroyGame
     case dismissDetail
     case addManualTitle
     case addManualSubmit

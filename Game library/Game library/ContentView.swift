@@ -418,6 +418,7 @@ private struct GameDetailSheet: View {
     let onClose: () -> Void
     @State private var titleDraft: String
     @State private var errorMessage: String?
+    @State private var confirmDestroy = false
     @FocusState private var focus: LibraryFocusTarget?
 
     private var ink: ShelfInk { ShelfInk(scheme: colorScheme) }
@@ -484,6 +485,12 @@ private struct GameDetailSheet: View {
                     .accessibilityValue(GamePresentation.ratingLabel(game.rating))
                 }
 
+                Button(GamePresentation.destroyActionTitle, role: .destructive) {
+                    confirmDestroy = true
+                }
+                .focused($focus, equals: .destroyGame)
+                .accessibilityIdentifier(GamePresentation.destroyActionIdentifier)
+
                 if game.releaseDate != nil || !game.platforms.isEmpty || game.source == "rawg" {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Katalog bilgisi")
@@ -513,6 +520,16 @@ private struct GameDetailSheet: View {
             .frame(maxWidth: .infinity, alignment: .leading)
         }
         .defaultFocus($focus, .detailTitle)
+        .confirmationDialog(
+            GamePresentation.destroyConfirmTitle(for: game.title),
+            isPresented: $confirmDestroy,
+            titleVisibility: .visible
+        ) {
+            Button(GamePresentation.destroyActionTitle, role: .destructive, action: commitDestroy)
+            Button(GamePresentation.destroyCancelTitle, role: .cancel) {}
+        } message: {
+            Text(GamePresentation.destroyConfirmMessage)
+        }
     }
 
     private func statusToggle(
@@ -549,6 +566,16 @@ private struct GameDetailSheet: View {
         case .applied:
             errorMessage = nil
         case .rejected(let message), .saveFailed(let message):
+            errorMessage = message
+        }
+    }
+
+    private func commitDestroy() {
+        switch Game.destroy(game, from: modelContext, save: persistEdit) {
+        case .destroyed:
+            errorMessage = nil
+            onClose()
+        case .saveFailed(let message):
             errorMessage = message
         }
     }
