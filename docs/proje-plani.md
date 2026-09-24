@@ -75,7 +75,8 @@ Bu bölümdeki kurallar ilk sürüm için kesinleştirilmiştir.
 - API araması kişisel durumları ve puanı doldurmaz. Aynı kaynak ve dış kimlik
   yeniden içe aktarılırsa mevcut kayıt açılır; durumlar ve puan korunur.
 - Kaydedilmiş oyunlar, durum ve puan düzenleme ile elle ekleme çevrimdışı
-  çalışır. API araması internet ve kullanıcının RAWG anahtarını gerektirir.
+  çalışır. API araması internet ve Keychain'de ya da derlemede sağlanan RAWG
+  anahtarını gerektirir.
 - Kullanıcı bir oyunun durumlarını ekler veya kaldırır. Kart ve sekmeler aynı
   kayıt üzerinden güncellenir. Sekmeden çıkmak oyun kaydını silmez.
 - Durumlar bağımsız seçilir. Bitti seçimi otomatik olarak Oynandı eklemez veya
@@ -167,7 +168,7 @@ geçtikleri iddia edilmez. Aşağıdaki kurallar ilk sürüm için kesinleştiri
 | K17 | İçe aktarılan oyunu kaydet, interneti kapat ve uygulamayı yeniden aç. | Oyun ve kaynak bilgisi korunur. Durum, puan ve elle ekleme çevrimdışı kullanılabilir. | Yerel kalıcılık |
 | K18 | Eksik tarih/platform, boş API adı, geçersiz dış kimlik ve yerel kayıt hatasını dene. | İsteğe bağlı alanların eksikliği engel olmaz. Geçersiz zorunlu alanlar kaydedilmez; yerel kayıt hatası başarı göstermez ve yeniden denenebilir. | Veri doğrulama |
 | K19 | Arama, seçim, elle ekleme ve kaynak bağlantısını klavyeyle kullan. | Odak görünür; bütün akış erişilebilirdir. RAWG verisi gösterilen görünümlerde kaynak bağlantısı bulunur. | Erişilebilirlik ve atıf |
-| K20 | Anahtarı kaydet ve uygulamayı yeniden aç; saklama alanlarını, API isteklerini ve günlükleri incele. | Anahtar Keychain'den alınır; düz metin tercihlerde, SwiftData'da veya günlüklerde bulunmaz. Yerel koleksiyon, durumlar ve kişisel puanlar RAWG'ye gönderilmez. | Gizlilik |
+| K20 | Anahtarı kaydet ve uygulamayı yeniden aç; saklama alanlarını, API isteklerini ve günlükleri incele. | Anahtar önce Keychain'den alınır. Keychain boşsa ve derleme `Secrets.xcconfig` kullandıysa anahtar paket içindeki `RAWGAPIKey` değerinden alınır. Bu dosya git'te yoktur. Düz metin tercihlerde, SwiftData'da veya günlüklerde anahtar bulunmaz. Yerel koleksiyon, durumlar ve kişisel puanlar RAWG'ye gönderilmez. | Gizlilik |
 
 ## Görselin sınırları
 

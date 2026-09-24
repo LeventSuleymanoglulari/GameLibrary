@@ -798,7 +798,10 @@ private struct AddGameSheet: View {
             APIKeySheet { apiKey = $0 }
         }
         .task {
-            do { apiKey = try KeychainStore.loadRAWGKey() ?? "" }
+            do {
+                let stored = try KeychainStore.loadRAWGKey()
+                apiKey = RAWGKeyResolver.resolve(keychainKey: stored, buildSecret: Self.launchBuildSecret())
+            }
             catch { errorMessage = "Kaydedilmiş API anahtarı okunamadı. Elle ekleme kullanılabilir." }
         }
         .onDisappear { requestTask?.cancel(); importer.stop() }
@@ -814,6 +817,13 @@ private struct AddGameSheet: View {
                 focus = .selectResult(first.id)
             }
         }
+    }
+
+    private static func launchBuildSecret() -> String {
+        #if DEBUG
+        if Game_libraryApp.usesTestStorage { return "" }
+        #endif
+        return Bundle.main.object(forInfoDictionaryKey: "RAWGAPIKey") as? String ?? ""
     }
 
     private func submitManual() {
@@ -870,7 +880,7 @@ private struct APIKeySheet: View {
                 .font(.headline)
             SecureField("RAWG API anahtarı", text: $key)
                 .textFieldStyle(.roundedBorder)
-            Text("Anahtar yalnızca bu Mac'in Keychain'inde saklanır; oyun kayıtlarına veya günlük kaydına yazılmaz.")
+            Text("Kaydettiğiniz anahtar bu Mac'in Keychain'inde saklanır ve derleme sırasında konan anahtarın önüne geçer. Anahtar oyun kayıtlarına veya günlük kaydına yazılmaz.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)

@@ -37,10 +37,14 @@ sayfalarda RAWG'ye etkin bağlantı gerektirir. Ücretsiz erişim sınırsız ku
 anlamına gelmez. Aynı sayfanın ticari kullanım açıklamaları birbiriyle tam
 örtüşmediği için ticari dağıtım öncesinde koşullar yeniden doğrulanmalıdır.
 
-Kullanıcı kendi RAWG API anahtarını ayarlara girer. Anahtar macOS Keychain'de
-saklanır; kaynak koda, uygulama paketine, SwiftData oyun kaydına veya günlük
-kayıtlarına yazılmaz. İstek adreslerindeki `key` parametresi de günlüklerden
-çıkarılır. Anahtar yoksa katalog kurulumu açıklanır ve **Elle ekle** kullanılabilir.
+Kullanıcı kendi RAWG API anahtarını ayarlardan kaydedebilir. Kayıtlı anahtar
+macOS Keychain'de durur ve derleme anahtarının önüne geçer. İsteğe bağlı derleme
+anahtarı `Game library/Config/Secrets.xcconfig` dosyasından gelir. Bu dosya git'e
+girmez. Dosya varken yapılan derleme, anahtarı uygulama paketinin `Info.plist`
+alanına `RAWGAPIKey` olarak yazar. Dosya yokken yapılan derleme anahtar içermez.
+Anahtar SwiftData oyun kaydına veya günlük kayıtlarına yazılmaz. İstek
+adreslerindeki `key` parametresi de günlüklerden çıkarılır. Anahtar yoksa
+katalog kurulumu açıklanır ve **Elle ekle** kullanılabilir.
 Bu seçim uygulama sunucusu gerektirmez. Uygulama hesabı açılmaz; API anahtarı
 almak için RAWG kaydı gerekir.
 

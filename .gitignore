@@ -34,3 +34,6 @@ fastlane/test_output/
 # Playground generated files
 timeline.xctimeline
 playground.xcworkspace
+
+# Private RAWG build key
+Game library/Config/Secrets.xcconfig

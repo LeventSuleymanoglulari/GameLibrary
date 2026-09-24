@@ -37,6 +37,7 @@ kayıtlıdır; ilk sürümün kapsamı ve geçmesi gereken kabul senaryoları be
 - [x] Seçilen teknolojiyle çalıştırılabilir masaüstü uygulamasını oluştur;
   kurulum ve geliştirme komutlarını README'ye ekle.
 - [x] RAWG anahtarını kullanıcı ayarlarından alıp Keychain'de sakla; eksik anahtarda elle ekleme sun.
+  İsteğe bağlı derleme anahtarı bu kayıttan sonra gelir ve Keychain değerinin gerisinde kalır.
 - [x] Kullanıcı komutuyla katalog araması, sayfalama, sonuç seçimi ve onayla içe aktarma akışını ekle.
 - [x] Kaynak kimliğini ve isteğe bağlı katalog alanlarını yerel kayda ekle; mevcut elle kayıtları koruyan veri geçişini doğrula.
 - [x] Aynı dış kimliği yeniden eklemeyi kayıt çoğaltmadan işle; aynı adlı oyunları otomatik birleştirme.

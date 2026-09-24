@@ -61,10 +61,23 @@ edilmiş genel dağıtım değildir. [Kurulum ve paketleme](docs/kurulum-macos.m
 ile [1.0 önizleme sürüm notlarını](docs/surum-notlari-1.0-onizleme.md) okuyun.
 6. aşama ve kurulu Release kabulü tamamlanmadan ilk sürüm bitmiş sayılmaz.
 
+## İsteğe bağlı derleme anahtarı
+
+Özel bir derlemede RAWG aramasının ilk açılışta hazır olması için
+`Game library/Config/Secrets.example.xcconfig` dosyasını aynı dizine
+`Secrets.xcconfig` adıyla kopyalayın ve `RAWG_API_KEY` değerini yerel dosyada
+girin. Bu dosya git tarafından yok sayılır. Ardından uygulamayı yeniden derleyin.
+Dosya olmadan proje derlenir ve kullanıcı anahtarını uygulamadan kaydedebilir.
+
+Anahtar derlenen uygulamanın `Info.plist` dosyasındaki `RAWGAPIKey` alanında
+okunabilir; paketi alan kişiler anahtara erişebilir. Aynı anahtarı kullananlar
+aynı RAWG kotasını paylaşır. Ayrıntılar: [kurulum](docs/kurulum-macos.md).
+
 ## Oyun ekleme adımları
 
-1. Araç çubuğundan **Oyun Ekle**'yi açın. Katalog kullanmak için kendi RAWG
-   anahtarınızı ayarlardan kaydedin. Anahtar yalnızca Keychain'de saklanır.
+1. Araç çubuğundan **Oyun Ekle**'yi açın. Derleme anahtarı varsa katalog araması
+   hazırdır. Yoksa kendi RAWG anahtarınızı ayarlardan bir kez kaydedin.
+   Kaydettiğiniz anahtar Keychain'de durur ve derleme anahtarının önüne geçer.
 2. Oyun adını yazıp **Ara**'yı seçin. Arama sonuçları henüz yerel kayıt değildir.
 3. Doğru sonucu seçip **Ekle** ile onaylayın. Sonraki sayfa yalnızca kullanıcı
    istediğinde yüklenir.
@@ -76,7 +89,8 @@ onayı gerekir. Yerel kayıt başarısızsa form açık kalır ve yeniden denene
 
 ## Otomatik katalog aktarımı
 
-**Oyun Ekle** panelinde kendi RAWG anahtarınızı ayarlayın; panelin altındaki
+**Oyun Ekle** panelinde RAWG anahtarı hazır olmalıdır. Derleme anahtarı yoksa
+kendi anahtarınızı ayarlayın. Panelin altındaki
 **Kataloğu Aktar** düğmesiyle sayfa sayfa aktarımı başlatın. Bu komut her oyun
 için ayrı onay istemez. Aynı adlı elle kayıtlar ayrı kalır; aynı RAWG kimliği
 çoğaltılmaz ve mevcut ad/durum/puan değiştirilmez. Yeni oyunlar durumsuz ve
@@ -90,7 +104,8 @@ anlamına gelmez. Anahtar, kota, ağ veya kayıt hatasında otomatik tekrar yokt
 sayfanın ardından devam eder. Yarım kalan sayfa tekrar istenir. Bitmiş bir
 taramayı **Baştan Tara** ile tekrarlamak mevcut kayıtları silmez.
 
-Elle ekleme aktarım sırasında da kullanılabilir. Anahtar yalnızca Keychain'de,
+Elle ekleme aktarım sırasında da kullanılabilir. Kullanıcının kaydettiği anahtar
+Keychain'de, isteğe bağlı derleme anahtarı uygulamanın `Info.plist` dosyasında,
 sayfa ilerlemesi ise oyunlarla aynı SwiftData deposunda tutulur. RAWG'nin
 zorunlu HTTPS `key` parametresi dışında kişisel koleksiyon bilgisi gönderilmez.
 Katalog zamanla değiştiğinden sayfa numarası bir katalog anlık görüntüsü

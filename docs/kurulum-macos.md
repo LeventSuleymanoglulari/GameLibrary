@@ -29,16 +29,22 @@ Güvenilir dağıtım hazır değilse kaynak projeyi Xcode'da derleyin.
 2. DMG'yi açın, `Game library.app` dosyasını Applications kısayoluna sürükleyin.
    Mevcut kurulum varsa önce uygulamayı kapatın; değiştirme kararını kendiniz verin.
 3. Disk imajını çıkarın; uygulamayı Applications içinden açın.
-4. **Oyun Ekle** ile elle kayıt yapabilirsiniz. RAWG araması için kendi
-   anahtarınızı uygulamadaki güvenli anahtar formuna girin; terminale veya
-   hata raporuna yazmayın. Katalog sonuçları onayla eklenir.
+4. **Oyun Ekle** ile elle kayıt yapabilirsiniz. Derleme `Secrets.xcconfig` ile
+   yapıldıysa RAWG araması ilk açılışta anahtar istemez. Aksi halde anahtarı
+   uygulamadaki güvenli anahtar formuna bir kez girin; terminale veya hata
+   raporuna yazmayın. Keychain'deki anahtar derleme anahtarının önüne geçer.
+   Katalog sonuçları onayla eklenir.
 5. Dört filtre arasında geçiş için ⌘1–⌘4 kullanın. Oyunu seçerek bağımsız
    durumları ve isteğe bağlı 1–10 puanı düzenleyin. Kapatıp açınca kayıtları
    doğrulayın; önceden eklenmiş oyunlar internet olmadan kullanılabilir.
 
 ZIP alternatifi yalnızca uygulamayı içerir; çıkarıp Applications'a kopyalayın.
 Güncelleme aynı uygulama kimliğini (`Game.Game-library`) korur. Paket koleksiyon
-veritabanı veya hazır API anahtarı içermez. Uygulamayı Çöp'e taşımak koleksiyonu
+veritabanı içermez. `Secrets.xcconfig` olmadan üretilen paket API anahtarı
+içermez. Bu dosyayla üretilen paket anahtarı `Info.plist` içinde taşır;
+paketi alan kişiler anahtarı okuyabilir. Aynı anahtarı paylaşan arkadaşlar
+RAWG ücretsiz planının aylık 20.000 istek kotasını birlikte harcar.
+Uygulamayı Çöp'e taşımak koleksiyonu
 ve Keychain anahtarını otomatik silmez. Veri temizleme/göç betiği çalıştırılmaz.
 
 ## Genel dağıtıma geçiş
