@@ -139,7 +139,8 @@ Sol raydaki **Oyun ara…** alanı oyun adlarını mevcut filtrelerle birlikte s
 **Command–F** aramaya odaklanır; temizleme düğmesi aramayı sıfırlar.
 **Liste** ve **Pencere** aynı süzülmüş oyunları gösterir; ayrıntı paneli açık kalır.
 Sol raydaki platform menüsü rafı süzer. Ayrıntıdaki Steam, Epic Games, GOG, PC, PlayStation, Xbox, Nintendo Switch, Android veya iOS seçimi
-oyunla birlikte saklanır; RAWG katalog platformlarından bağımsızdır.
+oyunla birlikte sabit kimlikle saklanır; RAWG katalog platformlarından bağımsızdır.
+Önceki derlemenin kaydettiği platform adları da okunur.
 İlk açılış ve Ayarlar akışı bu değişikliğin kapsamı dışındadır.
 **Oynandı**, **Bitti** ve **Puan** oyun kartındaki bilgilerdir; ayrı sekmeler değildir.
 

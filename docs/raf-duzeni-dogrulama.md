@@ -27,3 +27,17 @@ Gerçek RAWG anahtarı veya kullanıcının kütüphanesi kullanılmadı. İlk a
 ## Arama ve genişletilmiş platformlar
 
 Sol raydaki arama alanı adları mevcut filtrelerle birlikte süzer. Command–F, sonuç bulunamaması, küçük harfle eşleşme, aramayı temizleme ve PlayStation seçiminin platform filtresiyle eşleşmesi aynı yerel UI testinde doğrulandı. Test geçti; ekran görüntüleri yenilendi.
+
+## PR 29 inceleme düzeltmeleri
+
+- Liste ve Pencere kartlarında görünür RAWG kaynak bağlantısı geri getirildi; favori düğmesi korundu.
+- Boş sonuç başlığı platform filtresini belirtir; başlık ve simge kırpılmış arama metnini kullanır.
+- Reduce Motion geçişinde raf, geometrik eşleme yerine 120 ms opaklık geçişiyle değiştirilir. Favori çıkışı 80 ms, girişi 140 ms (Reduce Motion ile 120 ms) sürer.
+- Platform seçimleri `steam`, `epic`, `gog` gibi sabit kimliklerle yazılır. Eski görünen adlar sabit bir uyumluluk eşlemesiyle okunur; etiket değişiklikleri filtrelemeyi bozmaz.
+- İlk sürüm kararları Favoriler filtresini içerir. Arama ve ek platformlar kullanıcının açık isteğiyle PR kapsamında tutulur.
+
+İnceleme düzeltmelerinin doğrulama sonuçları yerel Xcode çalıştırmasına aittir; GitHub CI sonucu değildir. Hareket süreleri kod üzerinden kontrol edildi, kare bazında ölçülmedi.
+
+Davranış testleri, `testCatalogSelectionRequiresConfirmation` ve `testFavoritesAndShelfViewsKeepDetailOpen` geçti. RAWG bağlantısı iki görünümde tıklanabilir; boşluk araması platform başlığını değiştirmez. Sabit platform kimliklerinin kaydı ve eski etiketlerin okunması test edildi. Eski şema geçiş kontrolü de geçti.
+
+![RAWG kaynak bağlantısı](assets/raf-rawg-kaynak.png)

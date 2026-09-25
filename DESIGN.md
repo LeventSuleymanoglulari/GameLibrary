@@ -14,4 +14,4 @@ Liste satırında kapak, ad, kaynak, durumlar, puan ve favori düğmesi bulunur.
 
 ## Hareket ve erişilebilirlik
 
-Kapak geometrisi görünüm değişiminde SwiftUI matchedGeometryEffect ile 320 ms boyunca eşleştirilir. Ayrıntı paneli 280 ms içinde 14 punto sağdan kayarak belirir. Favori işareti 140 ms içinde değişir. Reduce Motion ile geometrik hareket kaldırılır ve süre 120 ms olur. Sistem yazı tipleri, erişilebilir denetim adları ve Command–1…5 filtre kısayolları korunur.
+Kapak geometrisi görünüm değişiminde SwiftUI matchedGeometryEffect ile 320 ms boyunca eşleştirilir. Ayrıntı paneli 280 ms içinde 14 punto sağdan kayarak belirir. Favori işareti eklenirken 140 ms, kaldırılırken 80 ms içinde değişir. Reduce Motion ile geometrik hareket kaldırılır; Liste/Pencere 120 ms soluklaşır. Favori ekleme 120 ms, kaldırma 80 ms sürer. Sistem yazı tipleri, erişilebilir denetim adları ve Command–1…5 filtre kısayolları korunur.

@@ -6,11 +6,34 @@
 import Foundation
 import SwiftData
 
-enum LibraryPlatform {
-    static let options = [
-        "Steam", "Epic Games", "GOG", "PC", "PlayStation", "Xbox",
-        "Nintendo Switch", "Android", "iOS"
-    ]
+enum LibraryPlatform: String, CaseIterable {
+    case steam, epic, gog, pc, playstation, xbox, nintendoSwitch = "nintendo-switch", android, ios
+
+    var title: String {
+        switch self {
+        case .steam: "Steam"
+        case .epic: "Epic Games"
+        case .gog: "GOG"
+        case .pc: "PC"
+        case .playstation: "PlayStation"
+        case .xbox: "Xbox"
+        case .nintendoSwitch: "Nintendo Switch"
+        case .android: "Android"
+        case .ios: "iOS"
+        }
+    }
+
+    // İlk PR derlemesinde kaydedilmiş etiketleri de okuyabilmek için sabit eşleme.
+    static func resolve(_ stored: String?) -> Self? {
+        guard let stored else { return nil }
+        if let platform = Self(rawValue: stored) { return platform }
+        let legacy: [String: Self] = [
+            "Steam": .steam, "Epic Games": .epic, "GOG": .gog, "PC": .pc,
+            "PlayStation": .playstation, "Xbox": .xbox, "Nintendo Switch": .nintendoSwitch,
+            "Android": .android, "iOS": .ios
+        ]
+        return legacy[stored]
+    }
 }
 
 @Model

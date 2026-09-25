@@ -19,6 +19,12 @@ final class Game_libraryUITests: XCTestCase {
         app.popUpButtons["platformFilter"].click()
         app.menuItems["Steam"].click()
         XCTAssertFalse(app.buttons["gameCard-Raf Denemesi"].exists)
+        XCTAssertTrue(app.staticTexts["Bu platformda oyun yok"].exists)
+        app.typeKey("f", modifierFlags: .command)
+        app.typeText("   ")
+        XCTAssertTrue(app.staticTexts["Bu platformda oyun yok"].exists)
+        XCTAssertFalse(app.staticTexts["Sonuç bulunamadı"].exists)
+        app.buttons["Aramayı temizle"].click()
         app.popUpButtons["platformFilter"].click()
         app.menuItems["Epic Games"].click()
         app.popUpButtons["detailPlatform"].click()
@@ -281,7 +287,17 @@ final class Game_libraryUITests: XCTestCase {
         self.add(screenshot)
         add.click()
         XCTAssertTrue(app.buttons["detailDismiss"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.links["RAWG kaynağında görüntüle"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.links["gameSourceLink"].waitForExistence(timeout: 5), app.debugDescription)
+        app.buttons["detailDismiss"].click()
+        let source = app.links.matching(NSPredicate(format: "identifier BEGINSWITH %@", "shelfSource-")).firstMatch
+        XCTAssertTrue(source.waitForExistence(timeout: 5))
+        XCTAssertTrue(source.isHittable)
+        app.radioButtons["Pencere"].click()
+        XCTAssertTrue(source.isHittable)
+        let attachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        attachment.name = "Raf RAWG kaynak bağlantısı"
+        attachment.lifetime = .keepAlways
+        self.add(attachment)
     }
 
     @MainActor func testFailedSaveRetainsManualInputAndSheet() throws {

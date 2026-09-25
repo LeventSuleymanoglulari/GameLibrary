@@ -3,6 +3,25 @@ import SwiftData
 @testable import Game_library
 
 @MainActor final class PersistenceTests: XCTestCase {
+    func testPlatformIDsReadLegacyLabelsAndPersistStableValues() throws {
+        let legacy = ["Steam", "Epic Games", "GOG", "PC", "PlayStation", "Xbox", "Nintendo Switch", "Android", "iOS"]
+        for (label, platform) in zip(legacy, LibraryPlatform.allCases) {
+            XCTAssertEqual(LibraryPlatform.resolve(label), platform)
+            XCTAssertEqual(LibraryPlatform.resolve(platform.rawValue), platform)
+        }
+        XCTAssertNil(LibraryPlatform.resolve(nil))
+        XCTAssertNil(LibraryPlatform.resolve("unknown"))
+        let container = try ModelContainer(for: Game.self, configurations: ModelConfiguration(isStoredInMemoryOnly: true))
+        let context = ModelContext(container)
+        let game = Game(title: "Platform")
+        game.storePlatform = LibraryPlatform.epic.rawValue
+        context.insert(game)
+        try context.save()
+        let saved = try XCTUnwrap(ModelContext(container).fetch(FetchDescriptor<Game>()).first)
+        XCTAssertEqual(saved.storePlatform, "epic")
+        XCTAssertEqual(LibraryPlatform.resolve(saved.storePlatform), .epic)
+    }
+
     func testTabsDependOnlyOnTheirIndependentStatus() {
         let game = Game(title: "Tabs")
         XCTAssertEqual(LibraryTab.allCases.count, 5)
