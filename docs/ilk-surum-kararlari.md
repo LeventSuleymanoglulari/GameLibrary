@@ -20,7 +20,7 @@ engellemez.
 - **Oyun ekle** akışı katalog aramasıyla açılır. **Elle ekle** seçeneği her zaman görünür ve internet gerektirmez.
 - Boş ya da yalnızca boşluklardan oluşan oyun adı kaydedilmez.
 - Yalnızca uygulanmış durumlar ve verilmiş puan kartta gösterilir.
-- Dört görünüm tam olarak Tüm Oyunlar, Kütüphanem, Wishlist ve Oynanacak'tır.
+- Raf görünümleri Tüm Oyunlar, Kütüphanem, Wishlist, Oynanacak ve Favoriler’dir. Favoriler bağımsız işaretle süzülür; beş oyun durumunu değiştirmez.
   Bunlar aynı oyun kayıtlarını filtreler; Oynandı, Bitti ve Puan ayrı sekme
   değildir.
 - Kaydetme hatası kullanıcıya açıkça bildirilir; işlem başarılı gibi

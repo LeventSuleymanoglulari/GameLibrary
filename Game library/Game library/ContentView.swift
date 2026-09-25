@@ -7,7 +7,7 @@ import SwiftData
 import SwiftUI
 
 enum LibraryTab: CaseIterable, Hashable {
-    case allGames, library, wishlist, toPlay
+    case allGames, library, wishlist, toPlay, favorites
 
     var title: String {
         switch self {
@@ -15,6 +15,7 @@ enum LibraryTab: CaseIterable, Hashable {
         case .library: "Kütüphanem"
         case .wishlist: "Wishlist"
         case .toPlay: "Oynanacak"
+        case .favorites: "Favoriler"
         }
     }
 
@@ -24,6 +25,7 @@ enum LibraryTab: CaseIterable, Hashable {
         case .library: "books.vertical"
         case .wishlist: "heart"
         case .toPlay: "play.circle"
+        case .favorites: "star"
         }
     }
 
@@ -33,6 +35,7 @@ enum LibraryTab: CaseIterable, Hashable {
         case .library: "2"
         case .wishlist: "3"
         case .toPlay: "4"
+        case .favorites: "5"
         }
     }
 
@@ -42,6 +45,7 @@ enum LibraryTab: CaseIterable, Hashable {
         case .library: game.isInLibrary
         case .wishlist: game.isWishlisted
         case .toPlay: game.isToPlay
+        case .favorites: game.isFavorite
         }
     }
 }
@@ -104,6 +108,12 @@ struct ContentView: View {
     @State private var selectedTab: LibraryTab = .allGames
     @State private var pane: LibraryPane = .browsing
     @State private var selectedGame: Game?
+    @State private var gridView = false
+    @State private var platformFilter = "all"
+    @State private var librarySearch = ""
+    @FocusState private var librarySearchFocused: Bool
+    @State private var shelfError: String?
+    @Namespace private var coverMotion
 
     private var ink: ShelfInk { ShelfInk(scheme: colorScheme) }
 
@@ -113,8 +123,14 @@ struct ContentView: View {
             : .timingCurve(0.16, 1, 0.3, 1, duration: 0.28)
     }
 
+    private var query: String { librarySearch.trimmingCharacters(in: .whitespacesAndNewlines) }
+
     private var visibleGames: [Game] {
-        games.filter(selectedTab.includes)
+        return games.filter {
+            selectedTab.includes($0)
+                && (platformFilter == "all" || LibraryPlatform.resolve($0.storePlatform)?.rawValue == platformFilter)
+                && (query.isEmpty || $0.title.localizedStandardContains(query))
+        }
     }
 
     var body: some View {
@@ -131,6 +147,12 @@ struct ContentView: View {
         .tint(ink.lamp)
         .frame(minWidth: 980, minHeight: 640)
         .toolbar {
+            ToolbarItem {
+                Button { librarySearchFocused = true } label: {
+                    Label("Kütüphanede Ara", systemImage: "magnifyingglass")
+                }
+                .keyboardShortcut("f", modifiers: .command)
+            }
             ToolbarItem(placement: .primaryAction) {
             Button {
                 withAnimation(motion) {
@@ -154,11 +176,39 @@ struct ContentView: View {
             Text("Oyun Kütüphanesi")
                 .font(.title3.weight(.semibold))
                 .padding(.horizontal, 8)
+            HStack(spacing: 6) {
+                Image(systemName: "magnifyingglass")
+                    .foregroundStyle(ink.secondary)
+                    .accessibilityHidden(true)
+                TextField("Oyun ara…", text: $librarySearch)
+                    .textFieldStyle(.plain)
+                    .focused($librarySearchFocused)
+                    .accessibilityLabel("Kütüphanede Ara")
+                    .accessibilityIdentifier("librarySearch")
+                if !librarySearch.isEmpty {
+                    Button {
+                        librarySearch = ""
+                        librarySearchFocused = true
+                    } label: {
+                        Image(systemName: "xmark.circle.fill")
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Aramayı temizle")
+                }
+            }
+            .padding(9)
+            .background(ink.spine, in: RoundedRectangle(cornerRadius: 8))
             VStack(spacing: 4) {
                 ForEach(LibraryTab.allCases, id: \.self) { tab in
                     filterButton(tab)
                 }
             }
+            Divider()
+            Picker("Platform", selection: $platformFilter) {
+                Text("Tüm platformlar").tag("all")
+                ForEach(LibraryPlatform.allCases, id: \.self) { Text($0.title).tag($0.rawValue) }
+            }
+            .accessibilityIdentifier("platformFilter")
             Spacer(minLength: 0)
         }
         .padding(16)
@@ -213,25 +263,48 @@ struct ContentView: View {
             .padding(.top, 18)
             .padding(.bottom, 12)
 
+            Picker("Görünüm", selection: $gridView) {
+                Label("Liste", systemImage: "list.bullet").tag(false)
+                Label("Pencere", systemImage: "square.grid.2x2").tag(true)
+            }
+            .pickerStyle(.segmented)
+            .labelsHidden()
+            .frame(width: 200)
+            .padding(.horizontal, 20)
+            .padding(.bottom, 12)
+            .accessibilityIdentifier("shelfViewMode")
+            .animation(reduceMotion ? .easeOut(duration: 0.12) : .timingCurve(0.16, 1, 0.3, 1, duration: 0.32), value: gridView)
+            if let shelfError {
+                Text(shelfError).foregroundStyle(.red).padding(.horizontal, 20)
+            }
             if visibleGames.isEmpty {
                 ContentUnavailableView(
-                    selectedTab == .allGames ? "Henüz oyun yok" : "Bu sekmede oyun yok",
-                    systemImage: "gamecontroller",
-                    description: Text(selectedTab == .allGames
-                        ? "Başlamak için araç çubuğundan Oyun Ekle'yi seçin."
+                    query.isEmpty
+                        ? (games.isEmpty ? "Henüz oyun yok" : platformFilter != "all" && games.contains(where: selectedTab.includes) ? "Bu platformda oyun yok" : "Bu sekmede oyun yok")
+                        : "Sonuç bulunamadı",
+                    systemImage: query.isEmpty ? "gamecontroller" : "magnifyingglass",
+                    description: Text(!query.isEmpty
+                        ? "Başka bir oyun adı deneyin veya aramayı ve filtreleri temizleyin."
+                        : games.isEmpty ? "Başlamak için araç çubuğundan Oyun Ekle'yi seçin."
+                        : platformFilter != "all" && games.contains(where: selectedTab.includes) ? "Bu platformda oyun yok. Başka bir platform seçin."
+                        : selectedTab == .favorites ? "Favori oyunları görmek için yıldız düğmesini kullanın."
                         : GamePresentation.emptyFilteredTabDescription)
                 )
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
-                    LazyVStack(spacing: 8) {
+                    // Aynı kimlik ve kapak geometrisi iki görünüm arasında korunur.
+                    LazyVGrid(columns: gridView ? [GridItem(.adaptive(minimum: 156), spacing: 14)] : [GridItem(.flexible())], spacing: 12) {
                         ForEach(visibleGames) { game in
                             shelfRow(game)
                         }
                     }
                     .padding(.horizontal, 16)
                     .padding(.bottom, 20)
+                    .id(reduceMotion ? gridView : false)
+                    .transition(.opacity)
                 }
+                .animation(reduceMotion ? .easeOut(duration: 0.12) : .timingCurve(0.16, 1, 0.3, 1, duration: 0.32), value: gridView)
             }
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -239,28 +312,46 @@ struct ContentView: View {
 
     private func shelfRow(_ game: Game) -> some View {
         let selected = selectedGame?.persistentModelID == game.persistentModelID && pane == .inspecting
-        return VStack(alignment: .leading, spacing: 6) {
+        let layout = gridView ? AnyLayout(VStackLayout(alignment: .leading, spacing: 6)) : AnyLayout(HStackLayout(alignment: .center, spacing: 6))
+        return layout {
+            VStack(alignment: .leading, spacing: 0) {
+                Button {
+                    withAnimation(motion) {
+                        selectedGame = game
+                        pane = .inspecting
+                    }
+                } label: {
+                    GameCard(game: game, ink: ink, emphasized: selected, grid: gridView, namespace: coverMotion, reduceMotion: reduceMotion)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(14)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("gameCard-\(game.title)")
+                .accessibilityValue(GamePresentation.accessibilityValue(for: game))
+                .accessibilityHint("Oyunun durumlarını ve puanını düzenlemek için açar.")
+                if game.source == "rawg" {
+                    Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL))
+                        .font(.caption)
+                        .padding(.horizontal, 14)
+                        .padding(.bottom, 12)
+                        .accessibilityIdentifier("shelfSource-\(game.title)")
+                }
+            }
             Button {
-                withAnimation(motion) {
-                    selectedGame = game
-                    pane = .inspecting
+                withAnimation(.easeOut(duration: game.isFavorite ? 0.08 : (reduceMotion ? 0.12 : 0.14))) {
+                    let result = GameMutation.setStatus(game, keyPath: \.isFavorite, value: !game.isFavorite, save: modelContext.save)
+                    if case .saveFailed(let message) = result { shelfError = message } else { shelfError = nil }
                 }
             } label: {
-                GameCard(game: game, ink: ink, emphasized: selected)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(14)
-                    .contentShape(Rectangle())
+                Label(game.isFavorite ? "Favorilerden çıkar" : "Favorilere ekle", systemImage: game.isFavorite ? "star.fill" : "star")
+                    .labelStyle(.iconOnly)
             }
-            .buttonStyle(.plain)
-            .accessibilityIdentifier("gameCard-\(game.title)")
-            .accessibilityValue(GamePresentation.accessibilityValue(for: game))
-            .accessibilityHint("Oyunun durumlarını ve puanını düzenlemek için açar.")
-            if game.source == "rawg" {
-                Link("RAWG kaynağında görüntüle", destination: RAWGService.safeSourceURL(game.sourceURL))
-                    .font(.caption)
-                    .padding(.horizontal, 14)
-                    .padding(.bottom, 12)
-            }
+            .buttonStyle(.borderless)
+            .accessibilityIdentifier("favorite-\(game.title)")
+            .accessibilityValue(game.isFavorite ? "Favori" : "Favori değil")
+            .padding(.horizontal, 14)
+            .padding(.bottom, 10)
         }
         .background(
             RoundedRectangle(cornerRadius: 12, style: .continuous)
@@ -346,21 +437,20 @@ private struct CatalogCover: View {
     }
 
     var body: some View {
-        if let url {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .success(let image):
+        ZStack {
+            ink.spine
+            Image(systemName: "gamecontroller")
+                .font(.system(size: width * 0.25))
+                .foregroundStyle(ink.secondary.opacity(0.5))
+            if let url {
+                AsyncImage(url: url) { image in
                     image.resizable().scaledToFill()
-                case .failure:
-                    ink.spine
-                default:
-                    ink.spine.opacity(0.45)
-                }
+                } placeholder: { Color.clear }
             }
-            .frame(width: width, height: width * 1.35)
-            .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-            .accessibilityHidden(true)
         }
+        .frame(width: width, height: width * 1.35)
+        .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .accessibilityHidden(true)
     }
 }
 
@@ -368,47 +458,58 @@ private struct GameCard: View {
     let game: Game
     let ink: ShelfInk
     var emphasized: Bool = false
+    var grid: Bool = false
+    var namespace: Namespace.ID
+    var reduceMotion: Bool
 
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            CatalogCover(urlString: game.artworkURL, width: 44, ink: ink)
-            VStack(alignment: .leading, spacing: 8) {
+        let layout = grid ? AnyLayout(VStackLayout(alignment: .leading, spacing: 10)) : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
+        layout {
+            if reduceMotion {
+                CatalogCover(urlString: game.artworkURL, width: grid ? 128 : 72, ink: ink)
+            } else {
+                CatalogCover(urlString: game.artworkURL, width: grid ? 128 : 72, ink: ink)
+                    .matchedGeometryEffect(id: game.persistentModelID, in: namespace, properties: .frame)
+            }
+            VStack(alignment: .leading, spacing: 6) {
                 Text(game.title)
                     .font(.headline)
                     .foregroundStyle(emphasized ? ink.lamp : ink.ink)
-                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                Text(game.source == "rawg" ? "RAWG kataloğundan eklendi" : "Elle eklendi")
+                    .font(.caption).foregroundStyle(ink.secondary)
+                if let platform = LibraryPlatform.resolve(game.storePlatform) {
+                    Text(platform.title).font(.caption).foregroundStyle(ink.secondary)
+                }
                 let labels = GamePresentation.statusLabels(for: game)
-                if !labels.isEmpty || game.rating != nil {
-                HStack(spacing: 6) {
-                    ForEach(labels, id: \.self) { label in
-                        Text(label)
-                            .font(.caption.weight(.medium))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .foregroundStyle(ink.ink)
-                            .background(ink.lamp.opacity(0.18), in: Capsule())
-                    }
-                    if let chip = GamePresentation.ratingChip(game.rating) {
-                        Text(chip)
-                            .font(.caption.weight(.medium))
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .foregroundStyle(ink.ink)
-                            .background(ink.lamp.opacity(0.32), in: Capsule())
+                if !labels.isEmpty {
+                    ViewThatFits(in: .horizontal) {
+                        HStack(spacing: 4) { statusChips(labels) }
+                        VStack(alignment: .leading, spacing: 4) { statusChips(labels) }
                     }
                 }
-            }
-            if game.source == "rawg" {
-                Text("RAWG kataloğundan eklendi")
-                    .font(.subheadline)
-                    .foregroundStyle(ink.secondary)
-            }
+                if let chip = GamePresentation.ratingChip(game.rating) {
+                    Text(chip).font(.caption.weight(.medium))
+                        .padding(.horizontal, 8).padding(.vertical, 4)
+                        .background(ink.lamp.opacity(0.25), in: Capsule())
+                }
             }
         }
+        .multilineTextAlignment(.leading)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(game.title)
         .accessibilityValue(GamePresentation.accessibilityValue(for: game))
     }
+
+    private func statusChips(_ labels: [String]) -> some View {
+        ForEach(labels, id: \.self) { label in
+            Text(label).font(.caption.weight(.medium))
+                .padding(.horizontal, 7).padding(.vertical, 3)
+                .background(ink.lamp.opacity(0.18), in: Capsule())
+                .fixedSize()
+        }
+    }
+
 }
 
 private struct GameDetailSheet: View {
@@ -432,7 +533,7 @@ private struct GameDetailSheet: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                CatalogCover(urlString: game.artworkURL, width: 168, ink: ink)
+                CatalogCover(urlString: game.artworkURL, width: 128, ink: ink)
                 HStack(alignment: .firstTextBaseline) {
                     Text(game.title)
                         .font(.title2.weight(.semibold))
@@ -443,6 +544,29 @@ private struct GameDetailSheet: View {
                         .focused($focus, equals: .dismissDetail)
                 }
 
+                Text(game.source == "rawg" ? "RAWG kataloğundan eklendi" : "Elle eklendi")
+                    .font(.subheadline).foregroundStyle(ink.secondary)
+                Toggle("Favori", isOn: Binding(
+                    get: { game.isFavorite },
+                    set: { value in
+                        let result = GameMutation.setStatus(game, keyPath: \.isFavorite, value: value, save: persistEdit)
+                        if case .saveFailed(let message) = result { errorMessage = message } else { errorMessage = nil }
+                    }
+                ))
+                .accessibilityIdentifier("detailFavorite")
+                Picker("Platform", selection: Binding(
+                    get: { LibraryPlatform.resolve(game.storePlatform)?.rawValue ?? "" },
+                    set: { value in
+                        let previous = game.storePlatform
+                        game.storePlatform = value.isEmpty ? nil : value
+                        do { try persistEdit(); errorMessage = nil }
+                        catch { game.storePlatform = previous; errorMessage = GamePresentation.saveFailedMessage }
+                    }
+                )) {
+                    Text("Seçilmedi").tag("")
+                    ForEach(LibraryPlatform.allCases, id: \.self) { Text($0.title).tag($0.rawValue) }
+                }
+                .accessibilityIdentifier("detailPlatform")
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Ad")
                         .font(.headline)

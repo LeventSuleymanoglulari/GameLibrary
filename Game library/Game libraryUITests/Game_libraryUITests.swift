@@ -1,6 +1,71 @@
 import XCTest
 
 final class Game_libraryUITests: XCTestCase {
+    @MainActor func testFavoritesAndShelfViewsKeepDetailOpen() throws {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["--ui-testing"]
+        launch(app)
+        app.buttons["Oyun Ekle"].click()
+        let title = app.textFields["manualTitle"]
+        XCTAssertTrue(title.waitForExistence(timeout: 5))
+        title.click()
+        title.typeText("Raf Denemesi")
+        app.buttons["Elle Ekle"].click()
+        XCTAssertTrue(app.buttons["detailDismiss"].waitForExistence(timeout: 5))
+        app.checkBoxes["detailFavorite"].click()
+        app.popUpButtons["detailPlatform"].click()
+        app.menuItems["Epic Games"].click()
+        app.popUpButtons["platformFilter"].click()
+        app.menuItems["Steam"].click()
+        XCTAssertFalse(app.buttons["gameCard-Raf Denemesi"].exists)
+        XCTAssertTrue(app.staticTexts["Bu platformda oyun yok"].exists)
+        app.typeKey("f", modifierFlags: .command)
+        app.typeText("   ")
+        XCTAssertTrue(app.staticTexts["Bu platformda oyun yok"].exists)
+        XCTAssertFalse(app.staticTexts["Sonuç bulunamadı"].exists)
+        app.buttons["Aramayı temizle"].click()
+        app.popUpButtons["platformFilter"].click()
+        app.menuItems["Epic Games"].click()
+        app.popUpButtons["detailPlatform"].click()
+        app.menuItems["PlayStation"].click()
+        XCTAssertFalse(app.buttons["gameCard-Raf Denemesi"].exists)
+        app.popUpButtons["platformFilter"].click()
+        app.menuItems["PlayStation"].click()
+        XCTAssertTrue(app.buttons["gameCard-Raf Denemesi"].exists)
+        app.buttons["Favoriler"].click()
+        XCTAssertTrue(app.buttons["gameCard-Raf Denemesi"].exists)
+        app.radioButtons["Pencere"].click()
+        XCTAssertTrue(app.buttons["gameCard-Raf Denemesi"].exists)
+        XCTAssertTrue(app.buttons["detailDismiss"].exists)
+        app.typeKey("f", modifierFlags: .command)
+        app.typeText("bulunmayan oyun")
+        XCTAssertFalse(app.buttons["gameCard-Raf Denemesi"].exists)
+        XCTAssertTrue(app.staticTexts["Sonuç bulunamadı"].exists)
+        app.buttons["Aramayı temizle"].click()
+        app.textFields["librarySearch"].typeText("raf")
+        XCTAssertTrue(app.buttons["gameCard-Raf Denemesi"].exists)
+        app.buttons["Aramayı temizle"].click()
+        let grid = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        grid.name = "Raf A pencere ve favoriler"
+        grid.lifetime = .keepAlways
+        add(grid)
+        app.radioButtons["Liste"].click()
+        app.buttons["favorite-Raf Denemesi"].click()
+        XCTAssertFalse(app.buttons["gameCard-Raf Denemesi"].exists)
+        XCTAssertTrue(app.buttons["detailDismiss"].exists)
+        app.buttons["Tüm Oyunlar"].click()
+        app.typeKey("2", modifierFlags: .command)
+        XCTAssertFalse(app.buttons["gameCard-Raf Denemesi"].exists)
+        app.typeKey("1", modifierFlags: .command)
+        XCTAssertTrue(app.buttons["gameCard-Raf Denemesi"].exists)
+        RunLoop.current.run(until: Date().addingTimeInterval(0.5))
+        let list = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        list.name = "Raf A liste ve ayrıntı"
+        list.lifetime = .keepAlways
+        add(list)
+    }
+
     @MainActor private func launch(_ app: XCUIApplication) {
         app.launch()
         app.activate()
@@ -222,7 +287,17 @@ final class Game_libraryUITests: XCTestCase {
         self.add(screenshot)
         add.click()
         XCTAssertTrue(app.buttons["detailDismiss"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.links["RAWG kaynağında görüntüle"].waitForExistence(timeout: 5), app.debugDescription)
+        XCTAssertTrue(app.links["gameSourceLink"].waitForExistence(timeout: 5), app.debugDescription)
+        app.buttons["detailDismiss"].click()
+        let source = app.links.matching(NSPredicate(format: "identifier BEGINSWITH %@", "shelfSource-")).firstMatch
+        XCTAssertTrue(source.waitForExistence(timeout: 5))
+        XCTAssertTrue(source.isHittable)
+        app.radioButtons["Pencere"].click()
+        XCTAssertTrue(source.isHittable)
+        let attachment = XCTAttachment(screenshot: app.windows.firstMatch.screenshot())
+        attachment.name = "Raf RAWG kaynak bağlantısı"
+        attachment.lifetime = .keepAlways
+        self.add(attachment)
     }
 
     @MainActor func testFailedSaveRetainsManualInputAndSheet() throws {
