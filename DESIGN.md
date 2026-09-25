@@ -1,21 +1,17 @@
-# Design
+# Tasarım
 
-## Scene
+## Sahne
 
-A person at a Mac, day or night, sorting a private shelf of games. Light mode is morning paper. Dark mode is the same ink under a lamp. The accent is lamp amber.
+Mac üzerinde kişisel oyun rafı. Açık görünüm sıcak kâğıt, koyu görünüm aynı paletin koyu tonlarıdır. Vurgu rengi kehribardır.
 
-## Layout
+## Düzen
 
-One window. A rail of four filters, the shelf, and one trailing pane. The pane is the empty invitation, the open game, or add. Those three never stack.
+[28 numaralı kayıttaki A çeşidi](https://github.com/LeventSuleymanoglulari/GameLibrary/issues/28) uygulanır. Sol ray, raf ve sağ panel korunur. Dört temel filtrenin yanında bağımsız Favoriler filtresi ve platform süzgeci bulunur. Liste ve Pencere aynı kayıtları gösterir; görünüm değişirken seçili oyun ve ayrıntı paneli korunur.
 
-## Type and color
+## Denetimler
 
-System text. Titles are semibold. Counts use monospaced digits. Amber marks the selected filter, the open spine, the rating, and the primary add action. Secondary text is a brown-gray mixed from the same ink, not a neutral gray on a colored ground.
+Liste satırında kapak, ad, kaynak, durumlar, puan ve favori düğmesi bulunur. Pencere kapak ızgarasıdır. Eksik kapaklar oyun simgesiyle gösterilir. Durumlar bağımsız macOS onay kutularıdır. Platform ve puan menüdür. Favori durumları değiştirmez. Steam, Epic Games, GOG, PC, PlayStation, Xbox, Nintendo Switch, Android ve iOS seçimi RAWG katalog platformlarından ayrıdır. Ekleme ile ayrıntı aynı sağ paneli kullanır.
 
-## Motion
+## Hareket ve erişilebilirlik
 
-The trailing pane fades in and shifts 14 points from the right over 280ms, with a fast ease-out. Reduce Motion uses a 120ms fade and no shift. Status chips on a spine update in the same timing.
-
-## Controls
-
-Filters are plain buttons with an opaque row so the whole row receives the click. Statuses are macOS checkboxes. The rating is a menu. Add and the open game share the trailing pane.
+Kapak geometrisi görünüm değişiminde SwiftUI matchedGeometryEffect ile 320 ms boyunca eşleştirilir. Ayrıntı paneli 280 ms içinde 14 punto sağdan kayarak belirir. Favori işareti 140 ms içinde değişir. Reduce Motion ile geometrik hareket kaldırılır ve süre 120 ms olur. Sistem yazı tipleri, erişilebilir denetim adları ve Command–1…5 filtre kısayolları korunur.

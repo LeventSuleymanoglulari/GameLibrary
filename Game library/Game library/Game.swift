@@ -6,6 +6,13 @@
 import Foundation
 import SwiftData
 
+enum LibraryPlatform {
+    static let options = [
+        "Steam", "Epic Games", "GOG", "PC", "PlayStation", "Xbox",
+        "Nintendo Switch", "Android", "iOS"
+    ]
+}
+
 @Model
 final class Game {
     var title: String
@@ -22,6 +29,8 @@ final class Game {
     var isToPlay: Bool = false
     var isPlayed: Bool = false
     var isCompleted: Bool = false
+    var isFavorite: Bool = false
+    var storePlatform: String?
     var rating: Int?
     var artworkURL: String?
 

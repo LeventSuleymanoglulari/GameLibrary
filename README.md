@@ -124,7 +124,7 @@ testleri, şema değişikliğini ve kabul sınırlarını açıklar.
 
 ![API'den oyun içe aktarma ve elle ekleme yedek yolu](docs/assets/oyun-kutuphanesi-onizleme.png)
 
-## Dört sekme
+## Raf filtreleri
 
 | Sekme | Gösterdiği oyunlar |
 | --- | --- |
@@ -132,8 +132,15 @@ testleri, şema değişikliğini ve kabul sınırlarını açıklar.
 | Kütüphanem | Kütüphane olarak işaretlenen, sahip olunan oyunlar |
 | Wishlist | İstek listesine eklenen oyunlar |
 | Oynanacak | Daha sonra oynanması planlanan oyunlar |
+| Favoriler | Yıldızla işaretlenen oyunlar |
 
-Bir oyun, ilgili olduğu birden fazla sekmede görünebilir.
+Bir oyun, ilgili olduğu birden fazla sekmede görünebilir. Favori işareti durumları değiştirmez.
+Sol raydaki **Oyun ara…** alanı oyun adlarını mevcut filtrelerle birlikte süzer.
+**Command–F** aramaya odaklanır; temizleme düğmesi aramayı sıfırlar.
+**Liste** ve **Pencere** aynı süzülmüş oyunları gösterir; ayrıntı paneli açık kalır.
+Sol raydaki platform menüsü rafı süzer. Ayrıntıdaki Steam, Epic Games, GOG, PC, PlayStation, Xbox, Nintendo Switch, Android veya iOS seçimi
+oyunla birlikte saklanır; RAWG katalog platformlarından bağımsızdır.
+İlk açılış ve Ayarlar akışı bu değişikliğin kapsamı dışındadır.
 **Oynandı**, **Bitti** ve **Puan** oyun kartındaki bilgilerdir; ayrı sekmeler değildir.
 
 ## Oyun kartları
@@ -154,7 +161,7 @@ Puan isteğe bağlıdır ve 1 ile 10 arasında tam sayıdır. Örnekteki puan te
 ## Projenin durumu
 
 Native macOS uygulamasında katalogdan veya elle oyun eklenebilir. **Tüm Oyunlar**,
-**Kütüphanem**, **Wishlist** ve **Oynanacak** aynı oyun kayıtlarının dört
+**Kütüphanem**, **Wishlist**, **Oynanacak** ve **Favoriler** aynı oyun kayıtlarının
 görünümüdür. Bir oyun açılarak beş bağımsız durum düzenlenebilir; uygulanan
 durumlar ve isteğe bağlı 1–10 kişisel puan kartta görünür. **Sil**, onaydan sonra
 oyunu kütüphaneden siler. Görsel anlatım bir taslaktır; çalışan uygulama değildir.

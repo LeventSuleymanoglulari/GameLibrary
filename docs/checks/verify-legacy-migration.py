@@ -52,6 +52,7 @@ AFTER = COMMON.replace("for: Game.self,", "for: Game.self, CatalogImportProgress
         precondition(game.externalID == nil, "Dış kimlik boş değil")
         precondition(game.sourceURL == nil, "Kaynak bağlantısı boş değil")
         precondition(game.releaseDate == nil, "Çıkış tarihi boş değil")
+        precondition(!game.isFavorite && game.storePlatform == nil, "Yeni raf alanları varsayılan değil")
         precondition(game.artworkURL == nil, "Eski kayıtta kapak adresi oluştu")
         precondition(!game.isPlayed && !game.isCompleted && game.rating == nil, "Yeni kişisel alanlar boş değil")
         let progressCount = try context.fetchCount(FetchDescriptor<CatalogImportProgress>())
@@ -86,7 +87,7 @@ def main():
         run(*compiler, str(old_model), str(runner))
         run(str(executable), str(store), str(identity))
         runner.write_text(AFTER, encoding="utf-8")
-        run(*compiler, str(ROOT / MODEL), str(ROOT / SERVICE), str(ROOT / PROGRESS), str(runner))
+        run(*compiler, str(ROOT / MODEL), str(ROOT / SERVICE), str(ROOT / PROGRESS), str(ROOT / "Game library/Game library/GamePresentation.swift"), str(ROOT / "Game library/Game library/PersonalRating.swift"), str(ROOT / "Game library/Game library/LibraryInputError.swift"), str(runner))
         run(str(executable), str(store), str(identity))
 
 

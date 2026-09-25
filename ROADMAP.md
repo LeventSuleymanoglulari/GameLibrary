@@ -160,3 +160,10 @@ Ayrıca istenirse kapsam ve veri kullanımı değerlendirilir.
 
 Takvim ve efor, 1. aşamadaki kararlar verilmeden tahmin edilmez. Bir görev
 yalnızca ilgili sonuç doğrulandığında tamamlandı olarak işaretlenir.
+
+## Raf düzeni güncellemesi — kayıt 28
+
+A çeşidi SwiftUI rafına uygulanır: Favoriler, Liste/Pencere, okunur kapaklar ve
+platform menüleri. Yukarıdaki dört sekme ölçütü ilk sürümün tarihsel kapsamıdır;
+Favoriler bağımsız ek filtredir. İlk açılış/Ayarlar işi kayıt 21 kapsamında kalır.
+Doğrulama: [raf düzeni kontrolü](docs/raf-duzeni-dogrulama.md).

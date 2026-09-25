@@ -5,7 +5,7 @@ import SwiftData
 @MainActor final class PersistenceTests: XCTestCase {
     func testTabsDependOnlyOnTheirIndependentStatus() {
         let game = Game(title: "Tabs")
-        XCTAssertEqual(LibraryTab.allCases.count, 4)
+        XCTAssertEqual(LibraryTab.allCases.count, 5)
         for mask in 0..<32 {
             game.isInLibrary = mask & 1 != 0
             game.isWishlisted = mask & 2 != 0
@@ -13,6 +13,8 @@ import SwiftData
             game.isPlayed = mask & 8 != 0
             game.isCompleted = mask & 16 != 0
             game.rating = 9
+            game.isFavorite = mask & 1 == 0
+            XCTAssertEqual(LibraryTab.favorites.includes(game), game.isFavorite)
             XCTAssertTrue(LibraryTab.allGames.includes(game))
             XCTAssertEqual(LibraryTab.library.includes(game), game.isInLibrary)
             XCTAssertEqual(LibraryTab.wishlist.includes(game), game.isWishlisted)
@@ -32,7 +34,7 @@ import SwiftData
         let expected = GameMutation.Outcome.saveFailed(message: GamePresentation.saveFailedMessage)
         XCTAssertEqual(GameMutation.rename(game, rawTitle: "Changed", save: fail), expected)
         XCTAssertEqual(GameMutation.setRating(game, raw: nil, save: fail), expected)
-        for key in [\Game.isInLibrary, \Game.isWishlisted, \Game.isPlayed, \Game.isCompleted] {
+        for key in [\Game.isInLibrary, \Game.isWishlisted, \Game.isPlayed, \Game.isCompleted, \Game.isFavorite] {
             XCTAssertEqual(GameMutation.setStatus(game, keyPath: key, value: true, save: fail), expected)
             XCTAssertFalse(game[keyPath: key])
         }
@@ -64,6 +66,8 @@ import SwiftData
                   case .added(let imported) = try Game.add(GameDraft.rawg(catalog), to: context) else { return XCTFail() }
             manual.isWishlisted = true
             manual.rating = 1
+            manual.isFavorite = true
+            manual.storePlatform = "Epic Games"
             imported.isInLibrary = true
             imported.isToPlay = true
             imported.isPlayed = true
@@ -82,6 +86,8 @@ import SwiftData
             let manual = try XCTUnwrap(games.first { $0.source == "manual" })
             XCTAssertTrue(manual.isWishlisted)
             XCTAssertEqual(manual.rating, 1)
+            XCTAssertTrue(manual.isFavorite)
+            XCTAssertEqual(manual.storePlatform, "Epic Games")
             XCTAssertEqual(imported.externalID, 42)
             XCTAssertEqual(imported.platforms, ["PC"])
             XCTAssertEqual(imported.releaseDate, "2007-10-10")
