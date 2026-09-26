@@ -1,6 +1,6 @@
 # Yumuşak tonlu uygulama ikonu
 
-[Kaynak PNG](oyun-kutuphanesi-ikon-yumusak.png), yerleşik ImageGen aracıyla krem–kahverengi sade kumanda tasarımının renkleri yumuşatılarak üretildi. Uygulamanın güncel `AppIcon` varlığı bu sürümdür. Şeffaflık korunarak 16–1024 piksel macOS boyutları `sips` ile hazırlandı.
+[Kaynak PNG](oyun-kutuphanesi-ikon-yumusak.png), yerleşik ImageGen aracıyla krem–kahverengi sade kumanda tasarımının renkleri yumuşatılarak üretilen önceki taslaktır. Güncel `AppIcon` kaynağı, macOS maskesine uygun [tam kare sürümdür](oyun-kutuphanesi-ikon-tam-kare.png).
 
 ## Düzenleme istemi
 
